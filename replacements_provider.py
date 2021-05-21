@@ -70,7 +70,7 @@ def get_word_replacements_hebrew(word:Word, gender, tense, verbs={}):
     if word.type == "REGULAR_WORD":
         return {word.content}
     word = word.role
-    HI_FEMALE_REP = {"היא", "מירב", "האישה"}
+    HI_FEMALE_REP =["היא", "מירב", "האישה"]
     d = {
         "מירב": {
             "PRESENT": {
@@ -144,9 +144,9 @@ def get_word_replacements_hebrew(word:Word, gender, tense, verbs={}):
             "PRESENT":
                 {
                     "I": ["לי"],
-                    "She": ["לה", "למורה", "למנהלת"],
-                    "We": ["לנו"],
-                    "He": ["לו", "למנהל"]
+                    "She": ["לה", "למירב", "לאישה"],
+                    "We": ["לנו", "לנו"],
+                    "He": ["לו","לילד" , "לעמרי"]
                 }
         },
         "לוממש": {
@@ -161,9 +161,9 @@ def get_word_replacements_hebrew(word:Word, gender, tense, verbs={}):
         "הוא": {
             "PRESENT": {
                     "She": HI_FEMALE_REP,
-                    "He": {"הוא", "הילד", "עמרי"},
-                    "We": {"אנחנו", "אנו"},
-                    "I": {"אני"}
+                    "He": ["הוא", "הילד", "עמרי"],
+                    "We": ["אנחנו", "אנו"],
+                    "I": ["אני"]
                     },
             "PAST": {
                 "She": HI_FEMALE_REP,
@@ -212,6 +212,14 @@ def get_word_replacements_hebrew(word:Word, gender, tense, verbs={}):
                     "I": {"מקריא"}
                 }
             },
+        "הכין": {
+            "PRESENT": {
+                "She": {"מכינה"},
+                "He": {"מכין"},
+                "We": {"מכינים"},
+                "I": {"מכין"}
+            }
+        },
         "רצה": {
             "PRESENT": {
                 "She": {"רוצה"},
@@ -219,10 +227,26 @@ def get_word_replacements_hebrew(word:Word, gender, tense, verbs={}):
                 "We": {"רוצים"},
                 "I": {"רוצה"}
             }
+        },
+        "שליובל": {
+            "PRESENT": {
+                "She": ["של מירב", "של ענבר", "שלה"],
+                "He": ["של מיכאל", "של עמוס", "שלו"],
+                "We": ["שלנו"],
+                "I": ["שלי"]
+            }
+        },
+        "ליובל": {
+            "PRESENT": {
+                "She": ["למירב", "לענבר", "לה"],
+                "He": ["למיכאל", "לעמוס", "לו"],
+                "We": ["לנו"],
+                "I": ["לי"]
+            }
         }
 
     }
-    assert word in d or word in verbs
+    assert word in d or word in verbs, word
     if word in d:
         return d[word][tense][gender]
     return [verbs[word][tense][gender]]
@@ -230,144 +254,122 @@ def get_word_replacements_hebrew(word:Word, gender, tense, verbs={}):
 
 def get_word_replacements_english(word:Word, gender, tense, verbs={}):
 
-    PLACES = ["מכולת", "קולנוע", "בית הספר", "מסעדה"]
-
     if word.type == "REGULAR_WORD":
         return {word.content}
     word = word.role
-    HI_FEMALE_REP = {"היא", "מירב", "האישה"}
     d = {
-        "מירב": {
+        "went": {
             "PRESENT": {
-                "He": [],
-                "She": ["מירב", "דנה"],
-                "We": [],
-                "I": ["מירב"]
-            }
-        },
-        "מקום":
-            {
-              "PRESENT": {
-                "I": PLACES,
-                  "She": PLACES,
-                  "He": PLACES,
-                  "We": PLACES
-              }
-
+                "She": {"goes"},
+                "He": {"goes"},
+                "We": {"go"},
+                "I": {"go"}
             },
+        },
+        "deserved": {
+            "PRESENT": {
+                "She": {"deserves"},
+                "He": {"deserves"},
+                "We": {"deserve"},
+                "I": {"deserve"}
+            },
+        },
         "Yuval": {
             "PRESENT": {
                 "He": ["Amos", "Michael"],
-                "She": ["Yarder", "Inbar"],
+                "She": ["Yarden", "Inbar"],
                 "We": [],
                 "I": ["Omry"]
-            }
-        },
-        "Amos": {
-            "PRESENT": {
-                "He": ["Amos", "Michael"],
-                "We": [],
-                "She": [],
-                "I": []
-            }
-        },
-        "ו": {
-            "PRESENT": {
-                "He": ["ו"],
-                "We": ["נו"],
-                "She": ["ה"],
-                "I": ["י"]
-            }
-        },
-        "my": {
-            "PRESENT":
-                {
-                    "I": ["my"],
-                    "She": ["her"],
-                    "We": ["our"],
-                    "He": ["his"]
-                }
-        },
-        "לו": {
-            "PRESENT":
-                {
-                    "I": ["לי"],
-                    "She": ["לה", "למורה", "למנהלת"],
-                    "We": ["לנו"],
-                    "He": ["לו", "למנהל"]
-                }
-        },
-        "לוממש": {
-            "PRESENT":
-                {
-                    "I": ["לי"],
-                    "She": ["לה"],
-                    "We": ["לנו"],
-                    "He": ["לו"]
-                }
-        },
-        "הוא": {
-            "PRESENT": {
-                    "She": HI_FEMALE_REP,
-                    "He": {"הוא", "הילד", "עמרי"},
-                    "We": {"אנחנו", "אנו"},
-                    "I": {"אני"}
-                    },
-            "PAST": {
-                "She": HI_FEMALE_REP,
-                "He": {"הוא", "הילד", "עמרי"},
-                "We": {"אנחנו", "אנו"},
-                "I": {"אני"}
-            }
-        },
-        "הואממש": {
-            "PRESENT": {
-                "She": {"היא"},
-                "He": {"הוא"},
-                "We": {"אנחנו"},
-                "I": {"אני"}
-            }
-        },
-        "שלוממש": {
-            "PRESENT": {
-            "She": {"שלה"},
-            "He": {"שלו"},
-            "I": {"שלי"},
-            "We": {"שלנו"}
-            }
-        },
-        "הלך": {
-            "PRESENT": {
-                "She": {"הולכת"},
-                "He": {"הולך"},
-                "We": {"הולכים"},
-                "I": {"הולך"}
             },
         },
-        "אמר": {
+        "tended": {
             "PRESENT": {
-                "She": {"אומרת"},
-                "He": {"אומר"},
-                "We": {"אומרים"},
-                "I": {"אומר"}
+                "She": {"tends"},
+                "He": {"tends"},
+                "We": {"tend"},
+                "I": {"tend"}
             },
-            },
-            "הקריא": {
+        },
+        "he":
+            {
                 "PRESENT": {
-                    "She": {"מקריאה"},
-                    "He": {"מקריא"},
-                    "We": {"מקריאים"},
-                    "I": {"מקריא"}
+                    "She": ["She", "Meirav", "The woman"],
+                    "He": ["He", "The Child", "Omry"],
+                    "We": ["We", "We"],
+                    "I": ["I"]
+                    },
+            },
+        "hemms":
+            {
+                "PRESENT": {
+                    "She": ["She"],
+                    "He": ["He"],
+                    "We": ["We"],
+                    "I": ["I"]
+                },
+            },
+        "is":
+            {
+                "PRESENT": {
+                    "She": ["is"],
+                    "He": ["is"],
+                    "We": ["are"],
+                    "I": ["am"]
+                },
+            },
+        "his":
+            {
+                "PRESENT": {
+                    "She": ["her"],
+                    "He": ["his"],
+                    "We": ["our"],
+                    "I": ["my"]
+                },
+            },
+        "read":
+            {
+                "PRESENT": {
+                    "She": ["reads"],
+                    "He": ["reads"],
+                    "We": ["read"],
+                    "I": ["read"]
                 }
             },
-        "רצה": {
+        "himmms":
+            {
+                "PRESENT": {
+                    "She": ["her"],
+                    "He": ["him"],
+                    "We": ["us"],
+                    "I": ["me"]
+                }
+            },
+        "himself":
+            {
+                "PRESENT": {
+                    "She": ["herself"],
+                    "He": ["himself"],
+                    "We": ["ourselves"],
+                    "I": ["myslef"]
+                }
+            },
+        "Yuval's":
+            {
+                "PRESENT": {
+                    "She": ["Meirav's", "Inbar's", "her"],
+                    "He": ["Michael's", "Amos's", "his"],
+                    "We": ["our"],
+                    "I": ["my"]
+                }
+            },
+        "Meirav": {
             "PRESENT": {
-                "She": {"רוצה"},
-                "He": {"רוצה"},
-                "We": {"רוצים"},
-                "I": {"רוצה"}
+                "He": [],
+                "She": ["Meirav", "Dana"],
+                "We": [],
+                "I": ["Meirav"]
             }
-        }
+        },
 
     }
     assert word in d or word in verbs

@@ -1,12 +1,8 @@
-from typing import Sequence, List, Dict
-from pprint import pprint
+from typing import Sequence, List
 from annotated_word import Word
+import itertools
 import re
-from replacements_provider import get_word_replacements_hebrew, get_word_replacements_english
-def get_word_replacements(word: Word, gender, tense, lang="hebrew"):
-    if lang == "hebrew":
-        return get_word_replacements_hebrew(word, gender, tense)
-    return get_word_replacements_english(word, gender, tense)
+from replacements_providers import get_replacements
 
 POAL = "פועל"
 
@@ -14,9 +10,6 @@ F = ["F"]
 M = ["M"]
 MF = F + M
 FM = M + F
-
-
-
 
 
 def populate_li(patten: str) -> Sequence[str]:
@@ -35,6 +28,7 @@ def populate_actor_plays(patten: str) -> Sequence[str]:
             instances.append(patten.replace("$משחק", actor).replace(verb, "").replace("$פועל", verbs[verb][category_index]))
 
     return instances
+
 
 def populate_mine(pattern: str) -> Sequence[str]:
     return [pattern.replace("$שלי", alternative) for alternative in my_list]
@@ -78,24 +72,43 @@ def get_implicit_pron_by_gender(gender):
     d.update({"She": "היא", "He": "הוא"})
     return d[gender]
 
-from typing import Set
 import nltk
-def process_sentence(sent: str):
 
-    words = nltk.WordPunctTokenizer().tokenize(sent.replace("#", "אבגדה"))
-    words = [word.replace("אבגדה", "#") for word in words]
+
+def capitalize_first_letter(st: str):
+    if not st:
+        return st
+    return st[0].upper() + st[1:]
+
+
+def process_sentence(sent: str, lang, tense_black_list, rep_dict):
+
+    words = nltk.WordPunctTokenizer().tokenize(sent.replace("#", "אבגדה").replace("'","XXX"))
+    words = [word.replace("אבגדה", "#").replace("XXX", "'") for word in words]
     annotated_words = [annotate_word(word, i) for i, word in enumerate(words)]
 
-    groups: Set[int] = {word.group for word in annotated_words}
+    groups = {word.group for word in annotated_words}
+    groups = list(sorted(groups))
     import itertools
     all_groups_combs = []
     for group in groups:
         group_words = [word for word in annotated_words if word.group == group]
         group_combs = []
-        for gender, tense in [("She", "PRESENT"), ("He", "PRESENT"), ("We", "PRESENT"), ("I",                                                                  "PRESENT")]:
+        for gender, tense in [("I", "PAST"),("She", "PAST"), ("She", "PRESENT"), ("He", "PRESENT"), ("We",
+
+                                                                                                     "PRESENT"), ("I",
+                                                                                                            "PRESENT")]:
+
+            if tense in tense_black_list:
+                continue
+            for word in group_words:
+                if word.type == POAL:
+                    gender = "He"
+
             all_word_reps = []
             for word in group_words:
-                word_reps = get_word_replacements(word, gender, tense)
+
+                word_reps = get_replacements(word, gender, tense, lang)
                 new_words = [(word_rep, word.word_pos) for word_rep in word_reps]
                 all_word_reps.append(new_words)
 
@@ -103,24 +116,26 @@ def process_sentence(sent: str):
                 group_com = list(var)
                 group_combs.append(group_com)
         all_groups_combs.append(group_combs)
-    all_sentences = set()
+    all_sentences = []
     for var in itertools.product(*all_groups_combs):
         sent = list(itertools.chain(*list(var)))
         sent = [y[0] for y in sorted(sent, key=lambda x: x[1])]
-        all_sentences.add(tuple(sent))
+        all_sentences.append(tuple(sent))
 
-    all_sentences = [sent for sent in all_sentences if "בני של" not in sent]
+    #all_sentences = [sent for sent in all_sentences if "בני של" not in sent]
 
-    all_sentences = get_non_name_contradicting_sentences(all_sentences, annotated_words)
+    #all_sentences = get_non_name_contradicting_sentences(all_sentences, annotated_words)
     all_sentences_text = []
     for sent in all_sentences:
         all_sentences_text.append(
         " ".join([annotated_words[i].prefix + word for i, word in enumerate(sent)])
         )
-    return [sent.replace(" .", ".").replace(" ,", ",").replace(" !", "!").replace(" ?", "?") for sent in
+    sents = [sent.replace(" .", ".").replace(" ,", ",").replace(" !", "!").replace(" ?", "?") for sent in
             all_sentences_text]
+    if rep_dict:
+        sents = [sent.replace(rep_dict[0], rep_dict[1]) for sent in sents]
+    return [capitalize_first_letter(sent) for sent in sents]
 
-import itertools
 def get_non_name_contradicting_sentences(all_sentences, annotated_words):
     group_name_indices = defaultdict(list)
     for word in annotated_words:
@@ -137,15 +152,6 @@ def get_non_name_contradicting_sentences(all_sentences, annotated_words):
             if sent[pair[0]] == sent[pair[1]]:
                 sentences_to_remove.add(s_id)
     return [sent for s_id, sent in enumerate(all_sentences) if s_id not in sentences_to_remove]
-    # sentences_to_remove = set()
-    # for s_id, sent in enumerate(all_sentences):
-    #     for group, indices in group_name_indices.items():
-    #         if len(indices) > 1:
-    #             words = [sent[index] for index in indices]
-    #             if len(set(words)) != 1:
-    #                 sentences_to_remove.add(s_id)
-
-
 
 
 if __name__ == "__main__":
@@ -172,27 +178,124 @@ if __name__ == "__main__":
     s = "#_1_הוא #_1_הלך ל_ #_2_מקום"
     s = "אין #_1_לו מצב רוח"
     s = "#_1_הוא #_1_קרא #_2_לו סיפור"
-    s = "קוראים #_1_לו #_1_יובל"
     s = "ההורים #_1_שלו קוראים #_2_לו-ממש סיפור לפני השינה"
     s = "#_1_אכל #_2_לו-ממש מהצלחת"
     s = "מגרד #_2_לו בגב"
     s = "הראש #_1_שלו מגרש"
-    s = "מכנים אותי #_1_יובל"
+    x = "מכנים אות#_1_ו #_1_יובל"
+    y = "#_1_he #_1_was called #_1_Yuval"
     s = "תעשה ל#_1_עמוס בנו של #_2_עמוס בבקשה #_1_עמוס"
     s = "#_1_פועל_גרד בראש"
     s = "תעשה ל#_1_מירב , בתו של #_2_עמוס , מקום"
     from pprint import pprint
-    x = "תעשה ל#_1_מירב, בתו של #_2_עמוס. מקום"
-    x = "#_1_ציר לי כבשה!"
-    x = "#_1_פזם לעצמ#_1_ו שיר"
-    x = "#_1_הכין #_1_לוממש חביתה"
-    x = "הטלפון הלך #_2_לו לאיבוד"
-    x = "#_1_הוא #_1_נטה להפגע בקלות"
-    x = "#_1_הוא #_1_האמין ב#_2_יובל"
-    x = "הגיע #_1_לו כי #_1_הואממש #_1_התנהג לא יפה"
-    x = "#_1_הוא #_1_הצליח בחיים בזכות הרצון #_1_שלו"
-    x = "ל#_1_עמוס לא משנה מה #_2_עמוס, בנו הקטן, יגיד"
-    x = "לא #_1_האמין לאף אחד"
-    x = "#_1_הוא לא #_1_ראה דבר כזה מימי#_1_ו"
-    pprint(process_sentence(x))
-    a = 3
+    #x = "תעשה ל#_1_מירב, בתו של #_2_עמוס, מקום"
+    #y = "make room to #_1_Meirav, #_2_Amos 's daughter"
+    # x = "#_1_ציר לי כבשה!"
+    # x = "#_1_פזם לעצמ#_1_ו שיר"
+    # x = "#_1_הכין #_1_לוממש חביתה"
+    # x = "הטלפון הלך #_2_לו לאיבוד"
+    x = "#_1_מישהו #_1_נטה להפגע בקלות"
+    y = "#_1_someone #_1_tended to get hurt easily"
+    # x = "#_1_מישהו #_1_הכין ב#_2_יובל"
+    # y = "#_1_someone believed in #_2_Yuval"
+    # #x = "#_1_מישהו #_1_הכין בחיים בזכות הרצון #_1_שלו"
+    #y = "#_1_someone succeeded in life thanks to #_1_his will power"
+    #x = "#_1_למישהו לא משנה מה #_2_עמוס, חתול#_1_ו הקטן, יגיד"
+    #y = "#_1_someone #_1_didn't care about what #_2_Amos, #_1_his little cat, will say"
+    #x = "לא #_1_האמין לאף אחד"
+    #x = "#_1_מישהו לא #_1_הכין דבר כזה מימי#_1_ו"
+    #y = "#_1_someone #_1_didn't see such a thing in #_1_his life"
+    #x = "#_1_הוא #_1_הלך לבית הספר"
+
+    #x = "#_1_מישהו #_1_הכין ל#_2_יובל סיפור"
+    #y = "#_1_someone tended #_2_Yuval a story"
+    #x = "הגיע #_1_למישהו כי #_1_הוא #_1_הכין לא יפה"
+    #y = "#_1_someone deserved it cause #_1_he really behaved badly"
+    # y = "#_1_someone #_1_is not in the mood"
+    # x = "#_1_מישהו לא במצב רוח"
+    # y = "#_1_someone #_1_didn't feel well"
+    # x = "#_1_מישהו לא #_1_הרגיש טוב"
+    #x = "#_1_מישהו #_1_הלך לבית #_1_שלו"
+    #y = "#_1_someone #_1_went to #_1_his house"
+    #x = "#_1_מישהו #_1_הקריא לילד #_1_שלו סיפור"
+    #y = "#_1_someone #_1_read #_1_his son a story"
+    #x = "קוראים #_1_לו #_1_יובל ו#_1_הוא #_1_אהב חיות"
+    #y = "#_1_his name is #_1_Yuval and #_1_he #_1_liked animals"
+    #x = "ההורים #_1_שלמישהו קוראים #_1_לו סיפור לפני השינה"
+    #y = "#_1_someone's parents read #_1_him a bedtime story"
+    #x = "גרד #_1_למישהו בגב"
+    #y = "#_1_someone's back itched"
+    # x = "הטלפון הלך #_1_לוממש לאיבוד"
+    # y = "#_1_hemms lost #_1_his phone"
+    #x = "#_1_מישהו #_1_הכין #_1_לעצמו חביתה"
+    #y = "#_1_someone #_1_made #_1_himself an omlete"
+    # y = "make room to #_1_Meirav, #_2_Yuval's daughter"
+    # x = "תעשה מקום ל#_1_מירב הבת #_2_שלו"
+    #
+    # x = "הטלפון #_1_שליובל הלך לאיבוד"
+    # y = "#_1_Yuval lost #_1_his phone"
+    #
+    ##y = "#_1_someone #_1_wanted to talk to me"
+    #(bad רצה) #x = "#_1_מישהו #_1_רצה לדבר איתי"
+    x = "#_1_מישהו לא #_1_רצה לדבר אית#_2_ו"
+    y = "#_1_someone #_1_didn't want to talk to #_2_him"
+    x = "#_1_מישהו לא #_1_חשב על העתיד"
+    y = "#_1_someone #_1_didn't think about the future"
+    x = "#_1_מישהו #_1_הלך לקולנוע"
+    y = "#_1_someone #_1_went to school"
+    x = "#_1_אין #_1_למישהו מצב רוח"
+    y = "#_1_someone #_1_is not in the mood"
+    x = "#_1_מישהו #_1_צברח"
+    y = "#_1_someone #_1_was upset"
+    y = "#_1_someone #_1_read me a story"
+    x = "#_1_מישהו #_1_הקריא לי סיפור"
+    x = "קוראים #_1_לו #_1_יובל"
+    y = "#_1_his name is #_1_Yuval"
+    x = "קוראים #_1_לו למטה"
+    y = "They are calling #_1_him downstairs"
+    x = "קוראים #_1_לו סיפור"
+    y = "They are reading #_1_him a story"
+    x = "#_1_מישהו #_1_קרא #_2_לו סיפור לפני השינה"
+    y = "#_1_someone #_1_read #_2_him a bedtime story"
+    x = "#_1_מישהו #_1_אכל #_2_למישהו מהצלחת"
+    y = "#_1_someone #_1_ate from #_2_someone's plate"
+    y = "#_1_he #_1_ate from #_2_his plate"
+    x = "#_1_הוא #_1_אכל מצלחת#_2_ו"
+    y = "#_1_someone's back itches"
+    x = "מגרד #_1_למישהו הגב"
+    y = "they call #_1_him #_1_Yuval"
+    x = "הם קוראים #_1_לו #_1_יובל"
+    x = "תעש"
+    x = "#_1_הוא #_1_פזם #_1_לעצמו שיר"
+    y = "#_1_he #_1_sang #_1_himself a song"
+    x = "#_1_הוא #_1_פזם #_2_למישהו שיר"
+    y = "#_1_he #_1_sang a song to #_2_tosomeone"
+    x = "הטלפון הלך #_1_למישהו לאיבוד"
+    y = "#_1_someone's phone got lost"
+    x = "#_1_מישהו #_1_נטה להפגע בקלות"
+    y = "#_1_someone #_1_tended to get hurt easily"
+    y = "#_1_someone #_1_believed in #_2_Yuval"
+    x = "#_1_מישהו #_1_האמין ב#_2_יובל"
+    x = "#_1_מישהו #_1_האמין #_2_למישהו"
+    y = "#_1_someone #_1_believed #_2_tosomeone"
+    y = "#_1_someone deserved it because #_1_he #_1_didn't behave well"
+    x = "הגיע #_1_למישהו כי #_1_הוא #_1_התנהג לא יפה"
+    x = "#_1_מישהו #_1_הצליח בחיים בזכות כוח הרצון #_1_שלו"
+    y = "#_1_someone #_1_succeeded in life thanks to #_1_his will power"
+    x = "#_1_מישהו #_1_הצליח בחיים בזכות כוח הרצון #_1_שלו"
+    y = "#_1_someone #_1_succeeded in life thanks to #_1_his parents power"
+    x = "לא #_1_התחשק #_1_למישהו לאכול"
+    y = "#_1_someone #_1_didn't feel like eating"
+    x = "לא אכפת #_1_למישהו"
+    y = "#_1_someone #_1_didn't care"
+    x = "לא #_1_פועל_שנה #_2_למישהו כלום"
+    y = "#_1_someone #_1_didn't care about anything"
+    x = "#_1_למישהו לא #_1_היהה אכפת מה #_2_מישהו #_2_אמר"
+    y = "#_1_someone #_1_didn't care about what #_2_someone #_2_said"
+
+    black_list = []
+    sentences = zip(process_sentence(x, "hebrew", black_list, ("צבר","צובר")), process_sentence(y,"english",
+                                                                                                black_list, None))
+    sentences = set(sentences)
+    for sent1, sent2 in sentences:
+        print(f"{sent1}\n{sent2}\n\n")
