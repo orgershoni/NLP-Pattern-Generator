@@ -3,8 +3,7 @@ from patterns_generator import populate_pattern
 from utils import compute_bleu
 from typing import List, Tuple
 import pandas as pd
-
-
+import sgmllib
 def main():
     # Read input sentences
     x = "#_1_אין #_1_למישהו כוח היום ללמוד"
