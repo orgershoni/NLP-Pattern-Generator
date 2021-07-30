@@ -1,2 +1,4 @@
 # nlp_patterns_db
-This is the first commit.
+Install first:
+https://github.com/RensaProject/nodebox_linguistics_extended
+Tl;dr: git clone https://github.com/RensaProject/nodebox_linguistics_extended.git
