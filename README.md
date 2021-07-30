@@ -8,3 +8,8 @@ Tl;dr:
 ```cd nodebox_linguistics_extended```
 
 ```python setup.py install```
+install:
+wheel
+pandas
+nltk
+sgmllib3k
