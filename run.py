@@ -26,6 +26,7 @@ def main():
     df = pd.DataFrame.from_dict({"HebrewSrc": hebrew_src_sentences, "EnglishRef": english_reference, "EnglishTrns":
         translated_sentences, "score": bleu_scores})
     print(df)
+    print(hebrew_src_sentences)
 
 
 if __name__ == "__main__":
