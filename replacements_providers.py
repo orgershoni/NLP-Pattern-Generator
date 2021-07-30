@@ -312,7 +312,7 @@ class TenseFullRepsProvider:
     @classmethod
     def has_replacements(cls, word, lang, verbs={}):
         if not verbs:
-            verbs_table = create_verbs_table(r"C:\Users\omryg\Downloads\InflectedVerbsExtended.csv")
+            verbs_table = create_verbs_table("InflectedVerbsExtended.csv")
             verbs.update(verbs_table)
 
         if lang == "hebrew":
