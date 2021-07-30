@@ -1,4 +1,5 @@
 from hebrew_verbs_provider import create_verbs_table
+from typing import List
 no_tense_words_hebrew = {
     "מירב": {
         "He": [],
@@ -323,9 +324,9 @@ class TenseFullRepsProvider:
             return False
 
 
-def get_replacements(word, gender, tense, lang):
+def get_replacements(word, gender, tense, lang) -> List[str]:
     if word.type == "REGULAR_WORD":
-        return {word.content}
+        return [word.content]
     word = word.role
     if TenseFullRepsProvider.has_replacements(word, lang):
         return TenseFullRepsProvider.get_replacements(word, gender, tense, lang)

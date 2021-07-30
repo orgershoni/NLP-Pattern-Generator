@@ -1,63 +1,24 @@
-from typing import Sequence, List
+from typing import List, Tuple
 from annotated_word import Word
 import itertools
 import re
+import utils
 from replacements_providers import get_replacements
+import nltk
+
 
 POAL = "פועל"
 
-F = ["F"]
-M = ["M"]
-MF = F + M
-FM = M + F
 
-
-def populate_li(patten: str) -> Sequence[str]:
-    return [patten.replace("$לי", alternative) for alternative in li_list]
-
-
-def populate_actor_plays(patten: str) -> Sequence[str]:
-    words = patten.split()
-    verb = ""
-    for i, word in enumerate(words):
-        if word == "$פועל":
-            verb = words[i+1]
-    instances = []
-    for category_index, category_actors in enumerate(actors):
-        for actor in category_actors:
-            instances.append(patten.replace("$משחק", actor).replace(verb, "").replace("$פועל", verbs[verb][category_index]))
-
-    return instances
-
-
-def populate_mine(pattern: str) -> Sequence[str]:
-    return [pattern.replace("$שלי", alternative) for alternative in my_list]
-
-
-def populate_oti(pattern: str) -> Sequence[str]:
-    return [pattern.replace("$אותי", alternative) for alternative in aoti_list]
-
-def populate_name(pattern: str) -> Sequence[str]:
-    return [pattern.replace("$שם", alternative[0]) for alternative in names]
-
-
-def get_priority(word_type):
-    if word_type == "MAGIC":
-        return 0
-    if word_type == "POAL":
-        return 1
-    return 2
-
-
-def annotate_word(word: str, word_pos) -> Word:
+def annotate_word(word: str, word_position) -> Word:
     groups: List[int] = list(re.findall("#_([0-9]+)", word))
     assert len(groups) <= 1, f"Bad annotation for word: {word}"
     if not groups:
-        return Word(word, word_pos=word_pos)
+        return Word(word, word_position=word_position)
     group = groups[0]
     content = list(re.split("#_[0-9]+", word)[1].split("_"))
     prefix = re.split("#_[0-9]+", word)[0]
-    w = Word(word, int(group), role=content[-1], word_pos=word_pos, prefix=prefix)
+    w = Word(word, int(group), role=content[-1], word_position=word_position, prefix=prefix)
     attrs = [attr for attr in content[:-1] if attr]
     if POAL in attrs:
         w.type = POAL
@@ -66,92 +27,52 @@ def annotate_word(word: str, word_pos) -> Word:
     return w
 
 
-from collections import defaultdict
-def get_implicit_pron_by_gender(gender):
-    d = defaultdict(str)
-    d.update({"She": "היא", "He": "הוא"})
-    return d[gender]
-
-import nltk
+def tokenize(sent: str) -> List[str]:
+    words = nltk.WordPunctTokenizer().tokenize(sent.replace("#", "אבגדה").replace("'", "XXX"))
+    return [word.replace("אבגדה", "#").replace("XXX", "'") for word in words]
 
 
-def capitalize_first_letter(st: str):
-    if not st:
-        return st
-    return st[0].upper() + st[1:]
+def get_all_combinations_for_single_speaker_group(group_words: List[Word], gender, tense, lang)\
+        -> List[List[Tuple[str, int]]]:
+    per_word_replacements: List[List[Tuple[str, int]]] = []
+    for word in group_words:
+        word_replacements: List[str] = get_replacements(word, gender, tense, lang)
+        word_replacements_with_index = [(replacement, word.word_position) for replacement in word_replacements]
+        per_word_replacements.append(word_replacements_with_index)
+    return [list(combination)
+            for combination in itertools.product(*per_word_replacements)]
 
 
-def process_sentence(sent: str, lang, tense_black_list, rep_dict):
+def populate_pattern(sent: str, lang, static_replacements_dict):
 
-    words = nltk.WordPunctTokenizer().tokenize(sent.replace("#", "אבגדה").replace("'","XXX"))
-    words = [word.replace("אבגדה", "#").replace("XXX", "'") for word in words]
-    annotated_words = [annotate_word(word, i) for i, word in enumerate(words)]
+    words = tokenize(sent)
+    annotated_words: List[Word] = [annotate_word(word, i) for i, word in enumerate(words)]
 
-    groups = {word.group for word in annotated_words}
-    groups = list(sorted(groups))
-    import itertools
-    all_groups_combs = []
-    for group in groups:
+    speaker_groups = list(sorted({word.group for word in annotated_words}))
+    per_group_combinations: List[List[List[Tuple[str, int]]]] = []
+    for group in speaker_groups:
         group_words = [word for word in annotated_words if word.group == group]
         group_combs = []
-        for gender, tense in [("I", "PAST"),("She", "PAST"), ("She", "PRESENT"), ("He", "PRESENT"), ("We",
-
-                                                                                                     "PRESENT"), ("I",
-                                                                                                            "PRESENT")]:
-
-            if tense in tense_black_list:
-                continue
-            for word in group_words:
-                if word.type == POAL:
-                    gender = "He"
-
-            all_word_reps = []
-            for word in group_words:
-
-                word_reps = get_replacements(word, gender, tense, lang)
-                new_words = [(word_rep, word.word_pos) for word_rep in word_reps]
-                all_word_reps.append(new_words)
-
-            for var in itertools.product(*all_word_reps):
-                group_com = list(var)
-                group_combs.append(group_com)
-        all_groups_combs.append(group_combs)
+        for gender, tense in [("I", "PAST"), ("She", "PAST"), ("She", "PRESENT"),
+                              ("He", "PRESENT"), ("We", "PRESENT"), ("I", "PRESENT")]:
+            group_combs.extend(get_all_combinations_for_single_speaker_group(group_words, gender, tense, lang))
+        per_group_combinations.append(group_combs)
     all_sentences = []
-    for var in itertools.product(*all_groups_combs):
-        sent = list(itertools.chain(*list(var)))
-        sent = [y[0] for y in sorted(sent, key=lambda x: x[1])]
+    for single_replacement_per_group in itertools.product(*per_group_combinations):
+        sent = list(itertools.chain(*list(single_replacement_per_group)))
+        sent = [_y[0] for _y in sorted(sent, key=lambda _x: _x[1])]
         all_sentences.append(tuple(sent))
 
-    #all_sentences = [sent for sent in all_sentences if "בני של" not in sent]
-
-    #all_sentences = get_non_name_contradicting_sentences(all_sentences, annotated_words)
     all_sentences_text = []
     for sent in all_sentences:
-        all_sentences_text.append(
-        " ".join([annotated_words[i].prefix + word for i, word in enumerate(sent)])
+        all_sentences_text.append(" ".join(
+            [annotated_words[i].prefix + word for i, word in enumerate(sent)])
         )
-    sents = [sent.replace(" .", ".").replace(" ,", ",").replace(" !", "!").replace(" ?", "?") for sent in
-            all_sentences_text]
-    if rep_dict:
-        sents = [sent.replace(rep_dict[0], rep_dict[1]) for sent in sents]
-    return [capitalize_first_letter(sent) for sent in sents]
-
-def get_non_name_contradicting_sentences(all_sentences, annotated_words):
-    group_name_indices = defaultdict(list)
-    for word in annotated_words:
-        if word.role == "עמוס" or word.role == "יובל":
-            group_name_indices[word.group].append(word.word_pos)
-
-    must_different_names_pairs = []
-    for comb in itertools.combinations(group_name_indices.values(), 2):
-        must_different_names_pairs.extend(list(itertools.product(*comb)))
-
-    sentences_to_remove = set()
-    for s_id, sent in enumerate(all_sentences):
-        for pair in must_different_names_pairs:
-            if sent[pair[0]] == sent[pair[1]]:
-                sentences_to_remove.add(s_id)
-    return [sent for s_id, sent in enumerate(all_sentences) if s_id not in sentences_to_remove]
+    sentences = [sent.replace(" .", ".").replace(" ,", ",").replace(" !", "!").replace(" ?", "?")
+                 for sent in all_sentences_text]
+    if static_replacements_dict:
+        sentences = [sent.replace(static_replacements_dict[0], static_replacements_dict[1]) for sent in sentences]
+    return [utils.capitalize_first_letter(sent) for sent in sentences]
 
 
 if __name__ == "__main__":
@@ -292,10 +213,13 @@ if __name__ == "__main__":
     y = "#_1_someone #_1_didn't care about anything"
     x = "#_1_למישהו לא #_1_היהה אכפת מה #_2_מישהו #_2_אמר"
     y = "#_1_someone #_1_didn't care about what #_2_someone #_2_said"
+    x = "#_1_אין #_1_למישהו כוח היום ללמוד"
+    y = "#_1_someone #_1_didn't feel like studying today"
+    x = "#_1_מישהו #_1_השתגע כי #_1_הוא #_1_היה כל הלילה במקלט"
+    y = "#_1_someone #_1_got crazy cause #_1_he #_1_was in the shelter all night"
 
-    black_list = []
-    sentences = zip(process_sentence(x, "hebrew", black_list, ("צבר","צובר")), process_sentence(y,"english",
-                                                                                                black_list, None))
-    sentences = set(sentences)
-    for sent1, sent2 in sentences:
-        print(f"{sent1}\n{sent2}\n\n")
+    __black_list = []
+    __sentences = zip(populate_pattern(x, "hebrew", ("צבר", "צובר")), populate_pattern(y, "english", None))
+    __sentences = set(__sentences)
+    for __sent1, __sent2 in __sentences:
+        print(f"{__sent1}\n{__sent2}\n\n")
