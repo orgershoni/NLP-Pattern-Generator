@@ -8,7 +8,7 @@ import nltk
 from utils import Language, Gender, Tense
 
 
-def parse_word_pattern(word_pattern: str, word_position: int) -> AnnotatedWord:
+def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
     groups: List[int] = list(re.findall("#_([0-9]+)", word_pattern))
     assert len(groups) <= 1, f"Bad annotation for word: {word_pattern}"
     if not groups:
@@ -46,7 +46,8 @@ def populate_pattern(sent: str, lang: Language,
                      static_replacements_dict_or_none: Dict[str, str] = None):
 
     pattern_words: List[str] = tokenize(sent)
-    parsed_words: List[AnnotatedWord] = [*map(parse_word_pattern, enumerate(pattern_words))]
+    parsed_words: List[AnnotatedWord] = [parse_word_pattern(pos, pattern) for pos, pattern in enumerate(
+        pattern_words)]
 
     # E.g. #_1_someone called #_2_someone => speaker_groups:= [1, 2]
     speaker_groups: List[int] = list(sorted({word.speaker_group for word in parsed_words}))
