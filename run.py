@@ -7,7 +7,7 @@ import argparse
 import sys
 
 
-def main(sentence_paris: List[Tuple[str, str]]):
+def main(sentence_paris: List[Tuple[str, str]], output_path: str):
     # x = "#_1_אין #_1_למישהו כוח היום ללמוד"
     # y = "#_1_someone #_1_didn't feel like studying today"
     text_to_translate = ""
@@ -29,7 +29,7 @@ def main(sentence_paris: List[Tuple[str, str]]):
         bleu_scores.append(compute_bleu(sent_ref, translated_sent))
     df = pd.DataFrame.from_dict({"HebrewSrc": hebrew_src_sentences, "EnglishRef": english_reference, "EnglishTrns":
         translated_sentences, "score": bleu_scores})
-    df.to_csv("op.csv", encoding="utf-8")
+    df.to_csv(output_path, encoding="utf-8")
 
 
 def get_input_pattern():
@@ -44,15 +44,16 @@ if __name__ == "__main__":
                                                  ' compares to the dst populated patterns using bleu score.')
     parser.add_argument("--patterns_file", type=str, help="file of format TODO of patterns.", default="")
     parser.add_argument("--inline_pattern", action="store_true", default=False)
+    parser.add_argument("-o", "--output_path", help="output path", default="scores.csv") 
     args = parser.parse_args(sys.argv[1:])
     patterns = []
     if args.inline_pattern:
         patterns = get_input_pattern()
     elif args.patterns_file:
-        df = pd.read_csv(args.patterns_file, encoding="utf-8")
+        df = pd.read_csv(args.patterns_file, encoding="utf-8", header=None)
         patterns = list(df.itertuples(index=False, name=None))
-        print(patterns)
+        print(f"Num patterns: {len(patterns)}")
     else:
         print("Error: either `patterns_file` or `inline_pattern` should be provided")
         exit(1)
-    main(patterns)
+    main(patterns, args.output_path)
