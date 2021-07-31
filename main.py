@@ -17,6 +17,9 @@ def main(sentence_paris: List[Tuple[str, str]], output_path: str):
         hebrew_sentences = populate_pattern(pair[0], Language.HEBREW, None)
         english_sentences = populate_pattern(pair[1], Language.ENGLISH, None)
         assert len(hebrew_sentences) == len(english_sentences)
+        unique_pairs = list(dict.fromkeys(zip(hebrew_sentences, english_sentences)))
+        hebrew_sentences = [pair[0] for pair in unique_pairs]
+        english_sentences = [pair[1] for pair in unique_pairs]
         text_to_translate += "\n".join(hebrew_sentences) + "\n"
         english_reference.extend(english_sentences)
         hebrew_src_sentences.extend(hebrew_sentences)
