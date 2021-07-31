@@ -13,6 +13,7 @@ def main(sentence_paris: List[Tuple[str, str]]):
     text_to_translate = ""
     english_reference = []
     hebrew_src_sentences = []
+    print("Starting to populate patterns")
     for pair in sentence_paris:
         hebrew_sentences = populate_pattern(pair[0], "hebrew", None)
         english_sentences = populate_pattern(pair[1], "english", None)
@@ -20,8 +21,10 @@ def main(sentence_paris: List[Tuple[str, str]]):
         text_to_translate += "\n".join(hebrew_sentences) + "\n"
         english_reference.extend(english_sentences)
         hebrew_src_sentences.extend(hebrew_sentences)
+    print("Translating src sentences")
     translated_sentences = he_en_translator.translate(text_to_translate)
     bleu_scores = []
+    print("Computing bleu")
     for translated_sent, sent_ref in zip(translated_sentences, english_reference):
         bleu_scores.append(compute_bleu(sent_ref, translated_sent))
     df = pd.DataFrame.from_dict({"HebrewSrc": hebrew_src_sentences, "EnglishRef": english_reference, "EnglishTrns":
@@ -39,9 +42,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Takes parallel input patterns in src and dst languages, '
                                                  'populates the patterns, translates the src language and'
                                                  ' compares to the dst populated patterns using bleu score.')
-    parser.add_argument("patterns_file", type=str, help="file of format TODO of patterns.", default="")
-    parser.add_argument("inline_pattern", type=bool, default=False)
-    args = parser.parse_args(sys.argv)
+    parser.add_argument("--patterns_file", type=str, help="file of format TODO of patterns.", default="")
+    parser.add_argument("--inline_pattern", action="store_true", default=False)
+    args = parser.parse_args(sys.argv[1:])
     patterns = []
     if args.inline_pattern:
         patterns = get_input_pattern()
