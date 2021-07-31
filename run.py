@@ -30,28 +30,14 @@ def main(sentence_paris: List[Tuple[str, str]], output_path: str):
     df.to_csv(output_path, encoding="utf-8")
 
 
-def get_input_pattern():
-    hebrew_sent = input("Enter the Hebrew pattern\n")
-    english_sent = input("Enter the English pattern\n")
-    return [(hebrew_sent, english_sent)]
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Takes parallel input patterns in src and dst languages, '
                                                  'populates the patterns, translates the src language and'
                                                  ' compares to the dst populated patterns using bleu score.')
-    parser.add_argument("--patterns_file", type=str, help="file of format TODO of patterns.", default="")
-    parser.add_argument("--inline_pattern", action="store_true", default=False)
+    parser.add_argument("patterns_file", type=str, help="file of format TODO of patterns.", default="")
     parser.add_argument("-o", "--output_path", help="output path", default="scores.csv") 
     args = parser.parse_args(sys.argv[1:])
-    patterns = []
-    if args.inline_pattern:
-        patterns = get_input_pattern()
-    elif args.patterns_file:
-        df = pd.read_csv(args.patterns_file, encoding="utf-8", header=None)
-        patterns = list(df.itertuples(index=False, name=None))
-        print(f"Num patterns: {len(patterns)}")
-    else:
-        print("Error: either `patterns_file` or `inline_pattern` should be provided")
-        exit(1)
+    df = pd.read_csv(args.patterns_file, encoding="utf-8", header=None)
+    patterns = list(df.itertuples(index=False, name=None))
+    print(f"Num patterns: {len(patterns)}")
     main(patterns, args.output_path)
