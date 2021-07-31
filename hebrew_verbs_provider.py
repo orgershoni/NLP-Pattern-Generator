@@ -2,6 +2,7 @@ import re
 from typing import Dict, List
 from collections import defaultdict
 
+
 def remove_diacritics(word):
     return re.sub("[\u0590-\u05CF]", "", word)
 

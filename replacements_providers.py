@@ -1,5 +1,10 @@
 from hebrew_verbs_provider import create_verbs_table
 from typing import List
+from utils import Language, Gender, Tense
+from annotated_word import WordType, AnnotatedWord
+import nodebox_linguistics_extended as nle
+
+
 no_tense_words_hebrew = {
     "מירב": {
         "He": [],
@@ -269,65 +274,67 @@ tense_full_hebrew = {
     },
 }
 
+gender_to_person = {
+    Gender.HE: 3,
+    Gender.SHE: 3,
+    Gender.THEY: 3,
+    Gender.II: 1,
+    Gender.WE: 1,
+    Gender.YOU: 2
+}
+
 
 class TenseLessRepsProvider:
 
     @classmethod
-    def get_replacements(cls, word, gender, tense, lang):
-        d = no_tense_words_hebrew if lang == "hebrew" else no_tense_words_english
-        return d[word][gender]
+    def get_replacements(cls, word: str, gender: Gender, tense: Tense, lang: Language):
+        d = no_tense_words_hebrew if lang == Language.HEBREW else no_tense_words_english
+        return d[word][gender.value]
 
     @classmethod
-    def has_replacements(cls, word, lang):
-        d = no_tense_words_hebrew if lang == "hebrew" else no_tense_words_english
+    def has_replacements(cls, word: str, lang: Language):
+        d = no_tense_words_hebrew if lang == Language.HEBREW else no_tense_words_english
         return word in d
 
-import nodebox_linguistics_extended as nle
-
-def person_from_gender(gender: str):
-    if gender == "He" or gender == "She":
-        return '3'
-    if gender == 'I' or gender == 'We':
-        return '1'
-    return '2'
 
 class TenseFullRepsProvider:
 
     @classmethod
-    def get_replacements(cls, word, gender, tense, lang, verbs={}):
+    def get_replacements(cls, word: str, gender: Gender, tense: Tense, lang: Language, verbs={}):
         if not verbs:
-            verbs_table = create_verbs_table("InflectedVerbsExtended.csv")
+            verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
             verbs.update(verbs_table)
 
-        if lang == "hebrew":
+        if lang == Language.HEBREW:
             if word in tense_full_hebrew:
-                return tense_full_hebrew[word][tense][gender]
+                return tense_full_hebrew[word][tense.value][gender.value]
             return [verbs[word][tense][gender]]
-        person = person_from_gender(gender)
+        person = str(gender_to_person[gender])
         negate = word.endswith("n't")
-        if tense == "PAST":
-            return [nle.verb.past(word, person=person, negate=negate)]
-        return [nle.verb.present(word, person=person, negate=negate)]
+        if tense == Tense.PAST:
+            return [nle.verb().past(word, person=person, negate=negate)]
+        return [nle.verb().present(word, person=person, negate=negate)]
 
     @classmethod
-    def has_replacements(cls, word, lang, verbs={}):
+    def has_replacements(cls, word: str, lang: Language, verbs={}):
         if not verbs:
-            verbs_table = create_verbs_table("InflectedVerbsExtended.csv")
+            verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
             verbs.update(verbs_table)
 
-        if lang == "hebrew":
+        if lang == Language.HEBREW:
             return word in tense_full_hebrew or word in verbs
         try:
-            cls.get_replacements(word, "He", "PAST", "english")
+            cls.get_replacements(word, Gender.HE, Tense.PAST, Language.ENGLISH)
             return True
         except KeyError:
             return False
 
 
-def get_replacements(word, gender, tense, lang) -> List[str]:
-    if word.type == "REGULAR_WORD":
-        return [word.content]
-    word = word.role
+def get_replacements(word: AnnotatedWord, gender: Gender, tense: Tense,
+                     lang: Language) -> List[str]:
+    if word.type == WordType.REGULAR:
+        return [word.pattern]
+    word = word.actual_word
     if TenseFullRepsProvider.has_replacements(word, lang):
         return TenseFullRepsProvider.get_replacements(word, gender, tense, lang)
     else:
