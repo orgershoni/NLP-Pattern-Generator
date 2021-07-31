@@ -8,8 +8,6 @@ import sys
 
 
 def main(sentence_paris: List[Tuple[str, str]], output_path: str):
-    # x = "#_1_אין #_1_למישהו כוח היום ללמוד"
-    # y = "#_1_someone #_1_didn't feel like studying today"
     text_to_translate = ""
     english_reference = []
     hebrew_src_sentences = []
