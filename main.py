@@ -8,15 +8,17 @@ import sys
 from utils import Language
 
 
-def main(sentence_paris: List[Tuple[str, str]], output_path: str):
+def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
     text_to_translate = ""
     english_reference = []
     hebrew_src_sentences = []
     print("Starting to populate patterns")
-    for pair in sentence_paris:
+    for pair in sentence_pairs:
+        # The generated hebrew and english sentences are parallel (in term of order).
         hebrew_sentences = populate_pattern(pair[0], Language.HEBREW, None)
         english_sentences = populate_pattern(pair[1], Language.ENGLISH, None)
         assert len(hebrew_sentences) == len(english_sentences)
+        # TODO explain why there are duplicates.
         unique_pairs = list(dict.fromkeys(zip(hebrew_sentences, english_sentences)))
         hebrew_sentences = [pair[0] for pair in unique_pairs]
         english_sentences = [pair[1] for pair in unique_pairs]
@@ -29,9 +31,11 @@ def main(sentence_paris: List[Tuple[str, str]], output_path: str):
     print("Computing bleu")
     for translated_sent, sent_ref in zip(translated_sentences, english_reference):
         bleu_scores.append(compute_bleu(sent_ref, translated_sent))
-    df = pd.DataFrame.from_dict({"HebrewSrc": hebrew_src_sentences, "EnglishRef": english_reference, "EnglishTrns":
-        translated_sentences, "score": bleu_scores})
-    df.to_csv(output_path, encoding="utf-8")
+    out_df = pd.DataFrame.from_dict({"Hebrew src": hebrew_src_sentences,
+                                     "English Reference": english_reference,
+                                     "English Translation": translated_sentences,
+                                     "Score": bleu_scores})
+    out_df.to_csv(output_path, encoding="utf-8")
 
 
 if __name__ == "__main__":
