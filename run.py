@@ -49,7 +49,9 @@ if __name__ == "__main__":
     if args.inline_pattern:
         patterns = get_input_pattern()
     elif args.patterns_file:
-        patterns = []  # Todo read from file format
+        df = pd.read_csv(args.patterns_file, encoding="utf-8")
+        patterns = list(df.itertuples(index=False, name=None))
+        print(patterns)
     else:
         print("Error: either `patterns_file` or `inline_pattern` should be provided")
         exit(1)
