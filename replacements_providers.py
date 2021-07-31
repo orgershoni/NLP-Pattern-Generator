@@ -308,12 +308,12 @@ class TenseFullRepsProvider:
         if lang == Language.HEBREW:
             if word in tense_full_hebrew:
                 return tense_full_hebrew[word][tense.value][gender.value]
-            return [verbs[word][tense][gender]]
+            return [verbs[word][tense.value][gender.value]]
         person = str(gender_to_person[gender])
         negate = word.endswith("n't")
         if tense == Tense.PAST:
-            return [nle.verb().past(word, person=person, negate=negate)]
-        return [nle.verb().present(word, person=person, negate=negate)]
+            return [nle.verb.past(word, person=person, negate=negate)]
+        return [nle.verb.present(word, person=person, negate=negate)]
 
     @classmethod
     def has_replacements(cls, word: str, lang: Language, verbs={}):

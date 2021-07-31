@@ -13,11 +13,11 @@ def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
     english_reference = []
     hebrew_src_sentences = []
     print("Starting to populate patterns")
-    for pair in sentence_pairs:
+    for i, pair in enumerate(sentence_pairs):
         # The generated hebrew and english sentences are parallel (in term of order).
         hebrew_sentences = populate_pattern(pair[0], Language.HEBREW, None)
         english_sentences = populate_pattern(pair[1], Language.ENGLISH, None)
-        assert len(hebrew_sentences) == len(english_sentences)
+        assert len(hebrew_sentences) == len(english_sentences), f"pattern: {i}\n {pair[0]}\n{pair[1]}"
         # TODO explain why there are duplicates.
         unique_pairs = list(dict.fromkeys(zip(hebrew_sentences, english_sentences)))
         hebrew_sentences = [pair[0] for pair in unique_pairs]
