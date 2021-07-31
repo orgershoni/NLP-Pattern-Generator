@@ -5,7 +5,7 @@ import re
 import utils
 from replacements_providers import get_replacements
 import nltk
-
+from utils import Language
 
 POAL = "פועל"
 
@@ -32,7 +32,7 @@ def tokenize(sent: str) -> List[str]:
     return [word.replace("אבגדה", "#").replace("XXX", "'") for word in words]
 
 
-def get_all_combinations_for_single_speaker_group(group_words: List[Word], gender, tense, lang)\
+def get_all_combinations_for_single_speaker_group(group_words: List[Word], gender, tense, lang: Language)\
         -> List[List[Tuple[str, int]]]:
     per_word_replacements: List[List[Tuple[str, int]]] = []
     for word in group_words:
@@ -43,7 +43,7 @@ def get_all_combinations_for_single_speaker_group(group_words: List[Word], gende
             for combination in itertools.product(*per_word_replacements)]
 
 
-def populate_pattern(sent: str, lang, static_replacements_dict):
+def populate_pattern(sent: str, lang: Language, static_replacements_dict):
 
     words = tokenize(sent)
     annotated_words: List[Word] = [annotate_word(word, i) for i, word in enumerate(words)]
@@ -92,7 +92,6 @@ if __name__ == "__main__":
     s = "לא מתחשק #_1_לה לאכול"
     s = "לא מתחשק ל_ #_1_עמוס #_2_בנה של #_2_יובל"
     s = "לא אכפת #_1_לו אם #_2_הוא #_2_רצה לאכול איתי"
-    #verbs_table = create_verbs_table(r"C:\Users\omryg\Downloads\InflectedVerbsExtended.csv")
 
     #s = "#_1_יובל #_1_הקריאה ל #_1_בנה סיפור"
     #s = "קוראים #_1_לה #_1_יובל"
@@ -108,7 +107,6 @@ if __name__ == "__main__":
     s = "תעשה ל#_1_עמוס בנו של #_2_עמוס בבקשה #_1_עמוס"
     s = "#_1_פועל_גרד בראש"
     s = "תעשה ל#_1_מירב , בתו של #_2_עמוס , מקום"
-    from pprint import pprint
     #x = "תעשה ל#_1_מירב, בתו של #_2_עמוס, מקום"
     #y = "make room to #_1_Meirav, #_2_Amos 's daughter"
     # x = "#_1_ציר לי כבשה!"
@@ -219,7 +217,7 @@ if __name__ == "__main__":
     y = "#_1_someone #_1_got crazy cause #_1_he #_1_was in the shelter all night"
 
     __black_list = []
-    __sentences = zip(populate_pattern(x, "hebrew", ("צבר", "צובר")), populate_pattern(y, "english", None))
+    __sentences = zip(populate_pattern(x, Language.HEBREW, ("צבר", "צובר")), populate_pattern(y, Language.ENGLISH, None))
     __sentences = set(__sentences)
     for __sent1, __sent2 in __sentences:
         print(f"{__sent1}\n{__sent2}\n\n")

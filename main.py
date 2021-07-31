@@ -5,6 +5,7 @@ from typing import List, Tuple
 import pandas as pd
 import argparse
 import sys
+from utils import Language
 
 
 def main(sentence_paris: List[Tuple[str, str]], output_path: str):
@@ -13,8 +14,8 @@ def main(sentence_paris: List[Tuple[str, str]], output_path: str):
     hebrew_src_sentences = []
     print("Starting to populate patterns")
     for pair in sentence_paris:
-        hebrew_sentences = populate_pattern(pair[0], "hebrew", None)
-        english_sentences = populate_pattern(pair[1], "english", None)
+        hebrew_sentences = populate_pattern(pair[0], Language.HEBREW, None)
+        english_sentences = populate_pattern(pair[1], Language.ENGLISH, None)
         assert len(hebrew_sentences) == len(english_sentences)
         text_to_translate += "\n".join(hebrew_sentences) + "\n"
         english_reference.extend(english_sentences)
