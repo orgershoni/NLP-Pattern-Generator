@@ -23,9 +23,23 @@ def get_gender(verb_attrs: List[str]):
     if "M" in verb_attrs and "SINGULAR" in verb_attrs and "THIRD" in verb_attrs:
         return "He"
     if "FIRST" in verb_attrs and "SINGULAR" in verb_attrs:
-        return "I"
+        if "F" in verb_attrs:
+            return "I_F"
+        elif "M" in verb_attrs:
+            return "I_M"
+        elif "MF" in verb_attrs:
+            return "I_MF"
+        else:
+            raise RuntimeError("Unexpected hebrew verb record found: %s" % verb_attrs)
     if "FIRST" in verb_attrs and "PLURAL" in verb_attrs:
-        return "We"
+        if "F" in verb_attrs:
+            return "WE_F"
+        elif "M" in verb_attrs:
+            return "WE_M"
+        elif "MF" in verb_attrs:
+            return "WE_MF"
+        else:
+            raise RuntimeError("Unexpected hebrew verb record found")
     return ""
 
 
@@ -42,7 +56,12 @@ def add_verb_record(record: str, verbs: Dict):
     gender = get_gender(metadata)
     if not tense or not gender:
         return
-    verb_record[tense][gender] = content
+    if gender.endswith("_MF"):
+        gender = gender[:-3]
+        verb_record[tense][gender + "_M"] = content
+        verb_record[tense][gender + "_F"] = content
+    else:
+        verb_record[tense][gender] = content
 
 
 def create_verbs_table(verbs_table_path: str):

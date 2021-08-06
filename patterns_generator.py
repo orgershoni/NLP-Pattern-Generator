@@ -13,7 +13,7 @@ def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
     assert len(groups) <= 1, f"Bad annotation for word: {word_pattern}"
     if not groups:
         # Regular word - not annotated.
-        return AnnotatedWord(word_pattern, actual_word=word_pattern, word_position=word_position)
+        return AnnotatedWord(word_pattern, actual_word=word_pattern, word_position=word_position, speaker_group=1)
     speaker_group = groups[0]
     pattern_parts_no_speaker_group = list(re.split("#_[0-9]+", word_pattern)[1].split("_"))
     actual_word = pattern_parts_no_speaker_group[-1]
@@ -22,8 +22,8 @@ def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
     if WordType.VERB_ANNOTATION in attrs:
         pattern_type = WordType.VERB_ANNOTATION
     prefix = re.split("#_[0-9]+", word_pattern)[0]  # First characters before the #_NUMBER annotation.
-    return AnnotatedWord(word_pattern, actual_word=actual_word, word_position=word_position, speaker_group=int(speaker_group),
-                         prefix=prefix, word_type=pattern_type)
+    return AnnotatedWord(word_pattern, actual_word=actual_word, word_position=word_position,
+                         speaker_group=int(speaker_group), prefix=prefix, word_type=pattern_type)
 
 
 def tokenize(pattern: str) -> List[str]:
@@ -52,11 +52,13 @@ def populate_pattern(sent: str, lang: Language,
     # E.g. #_1_someone called #_2_someone => speaker_groups:= [1, 2]
     speaker_groups: List[int] = list(sorted({word.speaker_group for word in parsed_words}))
     per_group_combinations: List[List[List[Tuple[str, int]]]] = []
+    speaker: int
     for speaker in speaker_groups:
-        speaker_words = [word for word in parsed_words if word.speaker_group == speaker]
+        speaker_words: List[AnnotatedWord] = [
+            word for word in parsed_words if word.speaker_group == speaker]
         group_combs = []
-        for gender, tense in [(Gender.II, Tense.PAST), (Gender.SHE, Tense.PAST), (Gender.SHE, Tense.PRESENT),
-                              (Gender.HE, Tense.PRESENT), (Gender.WE, Tense.PRESENT), (Gender.II, Tense.PRESENT)]:
+        for gender, tense in [(Gender.I_F, Tense.PAST), (Gender.SHE, Tense.PAST), (Gender.SHE, Tense.PRESENT),
+                              (Gender.HE, Tense.PRESENT), (Gender.I_F, Tense.PRESENT)]:
             group_combs.extend(get_all_combinations_for_single_speaker_group(speaker_words, gender, tense, lang))
         per_group_combinations.append(group_combs)
     all_sentences = []
@@ -75,7 +77,7 @@ def populate_pattern(sent: str, lang: Language,
     if static_replacements_dict_or_none:
         for word, replacement in static_replacements_dict_or_none.items():
             sentences = [sent.replace(word, replacement) for sent in sentences]
-    return [*map(utils.capitalize_first_letter, sentences)]
+    return [utils.capitalize_first_letter(sent) for sent in sentences]
 
 
 if __name__ == "__main__":

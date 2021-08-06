@@ -20,9 +20,11 @@ class Language(Enum):
 class Gender(Enum):
     HE = "He"
     SHE = "She"
-    WE = "We"
+    WE_F = "WE_F"
+    WE_M = "WE_M"
     THEY = "They"
-    II = "I"
+    I_F = "I_F"
+    I_M = "I_M"
     YOU = "You"
 
 
