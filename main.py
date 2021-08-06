@@ -17,7 +17,8 @@ def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
         # The generated hebrew and english sentences are parallel (in term of order).
         hebrew_sentences = populate_pattern(pair[0], Language.HEBREW, None)
         english_sentences = populate_pattern(pair[1], Language.ENGLISH, None)
-        assert len(hebrew_sentences) == len(english_sentences), f"pattern: {i}\n {pair[0]}\n{pair[1]}"
+        assert len(hebrew_sentences) == len(english_sentences), f"pattern: {i+1}\n {pair[0]}\n{pair[1]}\n" \
+                                                                f"{hebrew_sentences}\n{english_sentences}"
         # TODO explain why there are duplicates.
         unique_pairs = list(dict.fromkeys(zip(hebrew_sentences, english_sentences)))
         hebrew_sentences = [pair[0] for pair in unique_pairs]
@@ -43,9 +44,13 @@ if __name__ == "__main__":
                                                  'populates the patterns, translates the src language and'
                                                  ' compares to the dst populated patterns using bleu score.')
     parser.add_argument("patterns_file", type=str, help="file of format TODO of patterns.", default="")
-    parser.add_argument("-o", "--output_path", help="output path", default="scores.csv") 
+    parser.add_argument("-o", "--output_path", help="output path", default="scores.csv")
+    parser.add_argument("--pattern_indices", action='append', type=int, help="index of pattern in pattern file, "
+                                                                             "0-based index.")
     args = parser.parse_args(sys.argv[1:])
     df = pd.read_csv(args.patterns_file, encoding="utf-8", header=None)
     patterns = list(df.itertuples(index=False, name=None))
+    if args.pattern_indices:
+        patterns = [patterns[i] for i in args.pattern_indices]
     print(f"Num patterns: {len(patterns)}")
     main(patterns, args.output_path)

@@ -85,7 +85,8 @@ if __name__ == "__main__":
     __black_list = []
     src_populated_patterns = populate_pattern(src_lang_input, Language.HEBREW)
     dst_populated_patterns = populate_pattern(dst_lang_input, Language.ENGLISH)
-    assert len(src_populated_patterns) == len(dst_populated_patterns)
+    assert len(src_populated_patterns) == len(dst_populated_patterns), f"{set(src_populated_patterns)}\
+    n{set(dst_populated_patterns)}"
     __sentences = set(zip(src_populated_patterns, dst_populated_patterns))
     for __sent1, __sent2 in __sentences:
         print(f"{__sent1}\n{__sent2}\n\n")
