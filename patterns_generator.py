@@ -87,7 +87,6 @@ if __name__ == "__main__":
     # Current problem:
     # הטלפון שלמישהו הלך אבידו
     # someone lost his phone
-
     print("Populating patterns")
     __black_list = []
     src_populated_patterns = populate_pattern(src_lang_input, Language.HEBREW)
