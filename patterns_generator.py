@@ -83,6 +83,11 @@ def populate_pattern(sent: str, lang: Language,
 if __name__ == "__main__":
     src_lang_input = input("Enter a pattern in Hebrew\n")
     dst_lang_input = input("Enter a pattern in English\n")
+
+    # Current problem:
+    # הטלפון שלמישהו הלך אבידו
+    # someone lost his phone
+
     print("Populating patterns")
     __black_list = []
     src_populated_patterns = populate_pattern(src_lang_input, Language.HEBREW)

@@ -17,15 +17,15 @@ no_tense_words_hebrew = {
         "He": ["מיכאל", "עמוס"],
         "She": ["ירדן", "ענבר"],
         "We": [],
-        "I_M": ["מיכאל", "עמוס"]
-        ,"I_F": ["ירדן", "ענבר"],
+        "I_M": [],
+        "I_F": [],
     },
     "עמוס": {
         "He": ["מיכאל", "עמוס"],
         "We": [],
         "She": [],
         "I_M": [],
-        "I_F": ["מיכאל", "עמוס"]
+        "I_F": []
     },
     "ו": {
         "He": ["ו"],
@@ -34,18 +34,11 @@ no_tense_words_hebrew = {
         "I_M": ["י"],
         "I_F": ["י"],
     },
-    "צלחתה": {
-        "He": ["צלחתו"],
-        "She": ["צלחתה"],
-        "We": ["צלחתנו"],
-        "I_M": ["צלחתי"],
-"I_F": ["צלחתי"]
-    },
     "בנו": {
         "He": ["בנו"],
         "She": ["בנה"],
-        "I_M": ["בני"]
-        ,"I_F": ["בני"],
+        "I_M": ["בני"],
+        "I_F": ["בני"],
         "We_M": ["בננו"]
     },
     "שלו": {
@@ -159,8 +152,8 @@ no_tense_words_english = {
             "She": ["her"],
             "He": ["him"],
             "We": ["us"],
-            "I_M": ["me"]
-            ,"I_F": ["me"]
+            "I_M": ["me"],
+            "I_F": ["me"]
         },
     "himself":
         {
@@ -185,73 +178,7 @@ no_tense_words_english = {
         "I_M": []
     }
 }
-from collections import defaultdict
 tense_full_english = {
-    "went": {
-        "PRESENT": {
-            "She": {"goes"},
-            "He": {"goes"},
-            "We": {"go"},
-            "I": {"go"}
-        },
-        "PAST": {
-            "She": {"went"},
-            "He": {"went"},
-            "We": {"went"},
-            "I": {"went"}
-        },
-    },
-    "didn't": {
-        "PRESENT": {
-            "She": {"doesn't"},
-            "He": {"doesn't"},
-            "We": {"don't"},
-            "I": {"don't"}
-        },
-        "PAST": {
-            "She": ["didn't"], "He": ["didn't"], "We": ["didn't"], "I": ["didn't"]
-        }
-    },
-    "deserved": {
-        "PRESENT": {
-            "She": {"deserves"},
-            "He": {"deserves"},
-            "We": {"deserve"},
-            "I": {"deserve"}
-        },
-    },
-    "tended": {
-        "PRESENT": {
-            "She": {"tends"},
-            "He": {"tends"},
-            "We": {"tend"},
-            "I": {"tend"}
-        },
-    },
-    "was":
-        {
-            "PRESENT": {
-                "She": ["is"],
-                "He": ["is"],
-                "We": ["are"],
-                "I": ["am"]
-            },
-            "PAST": {
-                "She": ["was"],
-                "He": ["was"],
-                "We": ["were"],
-                "I": ["was"]
-            }
-        },
-    "read": {
-        "PRESENT": {
-            "She": ["reads"],
-            "He": ["reads"],
-            "We": ["read"],
-            "I": ["read"]
-        },
-    },
-
 }
 
 tense_full_hebrew = {
@@ -283,8 +210,8 @@ tense_full_hebrew = {
             "She": ["נטתה"],
             "He": ["נטה"],
             "We": ["נטינו"],
-            "I_F": ["נטיתי"]
-            ,"I_M": ["נטיתי"]
+            "I_F": ["נטיתי"],
+            "I_M": ["נטיתי"]
         },
     },
 "אין": {
@@ -292,8 +219,8 @@ tense_full_hebrew = {
             "She": ["אין"],
             "He": ["אין"],
             "We": ["אין"],
-            "I_M": ["אין"]
-            ,"I_F": ["אין"]
+            "I_M": ["אין"],
+            "I_F": ["אין"]
         },
         "PAST": {
             "She": ["לא היה"],
