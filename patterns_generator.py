@@ -29,7 +29,7 @@ def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
 def tokenize(pattern: str) -> List[str]:
     # Allow letters '#' '_' numbers and Hebrew diacritics to be in the same word.
     # Hebrew diacritics range: "\u0590-\u05CF"
-    return nltk.RegexpTokenizer(rf"[\w\#\u0590-\u05CF']+|[^\w\s]+").tokenize(pattern)
+    return nltk.RegexpTokenizer(rf"[\w\#\u0590-\u05CF\+']+|[^\w\s]+").tokenize(pattern)
 
 
 def get_all_combinations_for_single_speaker_group(group_words: List[AnnotatedWord], gender: Gender, tense: Tense,

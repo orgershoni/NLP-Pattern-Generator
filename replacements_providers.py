@@ -10,8 +10,15 @@ no_tense_words_hebrew = {
         "He": [],
         "She": ["דנה", "מירב"],
         "We": [],
-        "I_F": [],
+        "I_F": ["דנה", "מירב"],
         "I_M": [],
+    },
+    "עמוס": {
+        "He": ["מיכאל", "עמוס"],
+        "We": [],
+        "She": [],
+        "I_M": ["מיכאל", "עמוס"],
+        "I_F": []
     },
     "יובל": {
         "He": ["מיכאל", "עמוס"],
@@ -19,27 +26,6 @@ no_tense_words_hebrew = {
         "We": [],
         "I_M": ["מיכאל", "עמוס"],
         "I_F": ["ירדן", "ענבר"],
-    },
-    "עמוס": {
-        "He": ["מיכאל", "עמוס"],
-        "We": [],
-        "She": [],
-        "I_M": [],
-        "I_F": []
-    },
-    "ו": {
-        "He": ["ו"],
-        "We": ["נו"],
-        "She": ["ה"],
-        "I_M": ["י"],
-        "I_F": ["י"],
-    },
-    "בנו": {
-        "He": ["בנו"],
-        "She": ["בנה"],
-        "I_M": ["בני"],
-        "I_F": ["בני"],
-        "We_M": ["בננו"]
     },
     "שלו": {
         "I_M": ["שלי"],
@@ -105,15 +91,36 @@ no_tense_words_hebrew = {
         "We": ["שלנו", "שלנו"],
         "I_F": ["שלי"],
         "I_M": ["שלי"]
-    }
+    },
+    "ו": {
+        "He": ["ו"],
+        "We": ["נו"],
+        "She": ["ה"],
+        "I_M": ["י"],
+        "I_F": ["י"],
+    },
+    "בנו": {
+        "He": ["בנו"],
+        "She": ["בנה"],
+        "I_M": ["בני"],
+        "I_F": ["בני"],
+        "We_M": ["בננו"]
+    },
 }
 
 no_tense_words_english = {
+    "Meirav": {
+        "He": [],
+        "She": ["Dana", "Meirav"],
+        "We": [],
+        "I_F": ["Dana", "Meirav"],
+        "I_M": []
+    },
     "Amos": {
         "He": ["Michael", "Amos"],
         "We": [],
         "She": [],
-        "I_M": [],
+        "I_M": ["Michael", "Amos"],
         "I_F": []
     },
     "Yuval": {
@@ -131,14 +138,7 @@ no_tense_words_english = {
             "I_F": ["I"],
             "I_M": ["I"]
         },
-    "tosomeone": {
-        "I_F": ["to me"],
-        "I_M": ["to me"],
-        "She": ["to her", "to the woman", "to Meirav"],
-        "He": ["to him", "to the child", "to Omry"],
-        "We": ["to us", "to us"],
-    },
-    "someoneobj": {
+    "someone+obj": {
         "I_F": ["me"],
         "I_M": ["me"],
         "She": ["her", "the woman", "Meirav"],
@@ -169,7 +169,7 @@ no_tense_words_english = {
             "I_M": ["me"],
             "I_F": ["me"]
         },
-    "himself":
+    "himself":  # Once we support suffixes, would could also represent by #_1_him _self.
         {
             "She": ["herself"],
             "He": ["himself"],
@@ -184,19 +184,12 @@ no_tense_words_english = {
         "I_M": ["my"],
         "I_F": ["my"],
     },
-    "Meirav": {
-        "He": [],
-        "She": ["Dana", "Meirav"],
-        "We": [],
-        "I_F": [],
-        "I_M": []
-    }
 }
 tense_full_english = {
 }
 
 tense_full_hebrew = {
-"היהה": {
+    "היה+יהיה": {
         "PRESENT": {
             "She": [""],
             "He": [""],
@@ -212,23 +205,7 @@ tense_full_hebrew = {
             , "I_F": ["היה"]
         },
     },
-"נטה": {
-        "PRESENT": {
-            "She": ["נוטה"],
-            "He": ["נוטה"],
-            "We": ["נוטים"],
-            "I_M": ["נוטה"],
-            "I_F": ["נוטה"]
-        },
-        "PAST": {
-            "She": ["נטתה"],
-            "He": ["נטה"],
-            "We": ["נטינו"],
-            "I_F": ["נטיתי"],
-            "I_M": ["נטיתי"]
-        },
-    },
-"אין": {
+    "אין": {
         "PRESENT": {
             "She": ["אין"],
             "He": ["אין"],
