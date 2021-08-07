@@ -53,6 +53,4 @@ if __name__ == "__main__":
     #y = "#_1_someone tended #_2_Yuval a story"
     #x = "הגיע #_1_למישהו כי #_1_הוא #_1_הכין לא יפה"
     #y = "#_1_someone deserved it cause #_1_he really behaved badly"
-    # y = "#_1_someone #_1_is not in the mood"
-    # x = "#_1_מישהו לא במצב רוח"
     # x = "הטלפון הלך #_1_לו לאיבוד"

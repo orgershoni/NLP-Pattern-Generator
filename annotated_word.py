@@ -1,4 +1,5 @@
 from enum import Enum
+from utils import Gender, Tense
 
 
 class WordType(Enum):
@@ -10,13 +11,15 @@ class WordType(Enum):
 class AnnotatedWord:
     def __init__(self, pattern: str, actual_word: str, word_position: int, speaker_group: int = 0,
                  word_type: WordType = WordType.REGULAR,
-                 prefix=""):
+                 prefix="", gender: Gender = None, tense: Tense = None):
         self.pattern: str = pattern
         self.speaker_group: int = speaker_group
         self.actual_word: str = actual_word
         self.type: WordType = word_type
         self.word_position: int = word_position
         self.prefix: str = prefix
+        self.gender = gender
+        self.tense = tense
 
     def __str__(self):
         return f"content: {self.pattern}\ngroup: {self.speaker_group}\nrole:" \

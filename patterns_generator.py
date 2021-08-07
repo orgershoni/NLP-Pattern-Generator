@@ -22,8 +22,24 @@ def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
     if WordType.VERB_ANNOTATION in attrs:
         pattern_type = WordType.VERB_ANNOTATION
     prefix = re.split("#_[0-9]+", word_pattern)[0]  # First characters before the #_NUMBER annotation.
+    if "נ" in attrs:
+        gender = Gender.SHE
+    elif "ז" in attrs:
+        gender = Gender.HE
+    else:
+        gender = None
+
+    tense = None
+    if "עבר" in attrs or "past" in attrs:
+        tense = Tense.PAST
+    if "הווה" in attrs or "present" in attrs:
+        tense = Tense.PRESENT
+    if "עתיד" in attrs or "future" in attrs:
+        tense = Tense.FUTURE
+
     return AnnotatedWord(word_pattern, actual_word=actual_word, word_position=word_position,
-                         speaker_group=int(speaker_group), prefix=prefix, word_type=pattern_type)
+                         speaker_group=int(speaker_group), prefix=prefix, word_type=pattern_type,
+                         gender=gender, tense=tense)
 
 
 def tokenize(pattern: str) -> List[str]:
@@ -37,7 +53,9 @@ def get_all_combinations_for_single_speaker_group(group_words: List[AnnotatedWor
         -> List[List[Tuple[str, int]]]:
     per_word_replacements: List[List[Tuple[str, int]]] = []
     for word in group_words:
-        word_replacements: List[str] = get_replacements(word, gender, tense, lang)
+        word_gender = word.gender if word.gender else gender
+        word_tense = word.tense if word.tense else tense
+        word_replacements: List[str] = get_replacements(word, word_gender, word_tense, lang)
         word_replacements_with_index = [(replacement, word.word_position) for replacement in word_replacements]
         per_word_replacements.append(word_replacements_with_index)
     return [list(combination)
