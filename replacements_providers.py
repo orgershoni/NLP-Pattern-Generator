@@ -63,6 +63,13 @@ no_tense_words_hebrew = {
         "He": ["לו", "לילד", "לעמרי"],
         "We": ["לנו", "לנו"],
     },
+    "עםמישהו": {
+        "I_F": ["איתי"],
+        "I_M": ["איתי"],
+        "She": ["איתה", "עם האישי", "עם מירב"],
+        "He": ["איתו", "עם הילד", "עם עמרי"],
+        "We": ["איתנו", "איתנו"],
+    },
     "לו": {
         "I_M": ["לי"],
         "I_F": ["לי"],
@@ -125,6 +132,13 @@ no_tense_words_english = {
             "I_M": ["I"]
         },
     "tosomeone": {
+        "I_F": ["to me"],
+        "I_M": ["to me"],
+        "She": ["to her", "to the woman", "to Meirav"],
+        "He": ["to him", "to the child", "to Omry"],
+        "We": ["to us", "to us"],
+    },
+    "someoneobj": {
         "I_F": ["me"],
         "I_M": ["me"],
         "She": ["her", "the woman", "Meirav"],

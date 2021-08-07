@@ -70,7 +70,3 @@ if __name__ == "__main__":
     # x = "הטלפון הלך #_1_לוממש לאיבוד"
     #x = "#_1_מישהו #_1_הכין #_1_לעצמו חביתה"
     #y = "#_1_someone #_1_made #_1_himself an omlete"
-    # y = "make room to #_1_Meirav, #_2_Yuval's daughter"
-    # x = "תעשה מקום ל#_1_מירב הבת #_2_שלו"
-    ##y = "#_1_someone #_1_wanted to talk to me"
-    #(bad רצה) #x = "#_1_מישהו #_1_רצה לדבר איתי"

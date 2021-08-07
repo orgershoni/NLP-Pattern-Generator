@@ -43,25 +43,35 @@ def get_gender(verb_attrs: List[str]):
     return ""
 
 
-def add_verb_record(record: str, verbs: Dict):
+def _add_verb_record(record: str, verbs: Dict, canonical_verb):
     attrs = remove_diacritics(record).split(",")
-    verb = attrs[-1]
     content = attrs[2]
     metadata = attrs[3].split("+")
-    if verb not in verbs:
-        verbs[verb] = defaultdict(defaultdict)
+    if canonical_verb not in verbs:
+        verbs[canonical_verb] = defaultdict(defaultdict)
 
-    verb_record = verbs[verb]
+    verb_record = verbs[canonical_verb]
     tense = get_tense(metadata)
     gender = get_gender(metadata)
     if not tense or not gender:
         return
     if gender.endswith("_MF"):
         gender = gender[:-3]
-        verb_record[tense][gender + "_M"] = content
-        verb_record[tense][gender + "_F"] = content
+        if gender + "_M" not in verb_record[tense]:
+            verb_record[tense][gender + "_M"] = content
+        if gender + "_F" not in verb_record[tense]:
+            verb_record[tense][gender + "_F"] = content
     else:
-        verb_record[tense][gender] = content
+        # Prefer first occurrence, still need to verify it's actually better.
+        if gender not in verb_record[tense]:
+            verb_record[tense][gender] = content
+
+
+def add_verb_record(record: str, verbs: Dict):
+    canonical_verb_with_diacritics = record.split(",")[-1]
+    canonical_verb_no_diacritics = remove_diacritics(record).split(",")[-1]
+    _add_verb_record(record, verbs, canonical_verb_no_diacritics)
+    _add_verb_record(record, verbs, canonical_verb_with_diacritics)
 
 
 def create_verbs_table(verbs_table_path: str):

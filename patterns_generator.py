@@ -27,7 +27,9 @@ def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
 
 
 def tokenize(pattern: str) -> List[str]:
-    return nltk.RegexpTokenizer(r"[\w\#']+|[^\w\s]+").tokenize(pattern)
+    # Allow letters '#' '_' numbers and Hebrew diacritics to be in the same word.
+    # Hebrew diacritics range: "\u0590-\u05CF"
+    return nltk.RegexpTokenizer(rf"[\w\#\u0590-\u05CF']+|[^\w\s]+").tokenize(pattern)
 
 
 def get_all_combinations_for_single_speaker_group(group_words: List[AnnotatedWord], gender: Gender, tense: Tense,
@@ -58,7 +60,7 @@ def populate_pattern(sent: str, lang: Language,
             word for word in parsed_words if word.speaker_group == speaker]
         group_combs = []
         for gender, tense in [(Gender.I_F, Tense.PAST), (Gender.SHE, Tense.PAST), (Gender.SHE, Tense.PRESENT),
-                              (Gender.HE, Tense.PRESENT), (Gender.I_F, Tense.PRESENT)]:
+                              (Gender.HE, Tense.PRESENT), (Gender.I_F, Tense.PRESENT), (Gender.I_M, Tense.PRESENT)]:
             group_combs.extend(get_all_combinations_for_single_speaker_group(speaker_words, gender, tense, lang))
         per_group_combinations.append(group_combs)
     all_sentences = []
