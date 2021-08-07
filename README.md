@@ -1,14 +1,12 @@
 # nlp_patterns_db
-Install first:
+Should generally install nodebox_linguistics_extended package (currently copied it to a directory in this repository)
 https://github.com/RensaProject/nodebox_linguistics_extended
-Tl;dr: 
 
-```git clone https://github.com/RensaProject/nodebox_linguistics_extended.git```
+Known issues:
+1. patterns like "#_1_someone #_1_made #_2_someoneobj an omlete" generates
+also "I made me an omblete" (also generates "She made her an omblete", where but that's ok).
 
-```cd nodebox_linguistics_extended```
-
-```python setup.py install```
-install:
+requirements:
 wheel
 pandas
 nltk
