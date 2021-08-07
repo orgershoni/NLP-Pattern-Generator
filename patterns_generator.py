@@ -45,7 +45,8 @@ def get_all_combinations_for_single_speaker_group(group_words: List[AnnotatedWor
 
 
 def populate_pattern(sent: str, lang: Language,
-                     static_replacements_dict_or_none: Dict[str, str] = None):
+                     static_replacements_dict_or_none: Dict[str, str] = None,
+                     tenses_white_list: List[Tense] = None):
 
     pattern_words: List[str] = tokenize(sent)
     parsed_words: List[AnnotatedWord] = [parse_word_pattern(pos, pattern) for pos, pattern in enumerate(
@@ -61,7 +62,8 @@ def populate_pattern(sent: str, lang: Language,
         group_combs = []
         for gender, tense in [(Gender.I_F, Tense.PAST), (Gender.SHE, Tense.PAST), (Gender.SHE, Tense.PRESENT),
                               (Gender.HE, Tense.PRESENT), (Gender.I_F, Tense.PRESENT), (Gender.I_M, Tense.PRESENT)]:
-            group_combs.extend(get_all_combinations_for_single_speaker_group(speaker_words, gender, tense, lang))
+            if (not tenses_white_list) or (tense in tenses_white_list):
+                group_combs.extend(get_all_combinations_for_single_speaker_group(speaker_words, gender, tense, lang))
         per_group_combinations.append(group_combs)
     all_sentences = []
     for single_replacement_per_group in itertools.product(*per_group_combinations):
@@ -91,8 +93,8 @@ if __name__ == "__main__":
     # someone lost his phone
     print("Populating patterns")
     __black_list = []
-    src_populated_patterns = populate_pattern(src_lang_input, Language.HEBREW)
-    dst_populated_patterns = populate_pattern(dst_lang_input, Language.ENGLISH)
+    src_populated_patterns = populate_pattern(src_lang_input, Language.HEBREW, tenses_white_list=[Tense.PRESENT])
+    dst_populated_patterns = populate_pattern(dst_lang_input, Language.ENGLISH, tenses_white_list=[Tense.PRESENT])
     assert len(src_populated_patterns) == len(dst_populated_patterns), f"{set(src_populated_patterns)}\
     n{set(dst_populated_patterns)}"
     __sentences = set(zip(src_populated_patterns, dst_populated_patterns))
