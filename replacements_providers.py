@@ -259,6 +259,8 @@ tense_full_hebrew = {
         },
     },
 }
+# Some aliases.
+tense_full_hebrew["אין"] = tense_full_hebrew["היה+אין"]
 
 gender_to_person = {
     Gender.HE: 3,
