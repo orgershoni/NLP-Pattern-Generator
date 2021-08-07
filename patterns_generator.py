@@ -93,8 +93,8 @@ if __name__ == "__main__":
     # someone lost his phone
     print("Populating patterns")
     __black_list = []
-    src_populated_patterns = populate_pattern(src_lang_input, Language.HEBREW, tenses_white_list=[Tense.PRESENT])
-    dst_populated_patterns = populate_pattern(dst_lang_input, Language.ENGLISH, tenses_white_list=[Tense.PRESENT])
+    src_populated_patterns = populate_pattern(src_lang_input, Language.HEBREW)
+    dst_populated_patterns = populate_pattern(dst_lang_input, Language.ENGLISH)
     assert len(src_populated_patterns) == len(dst_populated_patterns), f"{set(src_populated_patterns)}\
     n{set(dst_populated_patterns)}"
     __sentences = set(zip(src_populated_patterns, dst_populated_patterns))
