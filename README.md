@@ -11,7 +11,7 @@ sgmllib3k
 
 # Introduction
 The project provides a pattern populater - you provide a sentence in Hebrew/ English, using the following rules:
-Each replaced word is annotated using <PREFIX>#_<SPEAKER_NUMBER>_<EXTRA_ANNOTATION>_<WORD>, where
+Each replaced word is annotated using <PREFIX>#\_<SPEAKER_NUMBER>\_<EXTRA_ANNOTATION>\_<WORD>, where
 * PREFIX: alphabet letters.
 * SPEAKER_NUMBER: integer. If only one speaker in the sentence use only 1 as a speaker. If two, use 1 & 2 etc...
 * EXTRA_ANNOTATION: TODO explain, more complicated.
