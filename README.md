@@ -16,7 +16,9 @@ Each replaced word is annotated using <PREFIX>#\_<SPEAKER_NUMBER>\_<EXTRA_ANNOTA
 * SPEAKER_NUMBER: integer. If only one speaker in the sentence use only 1 as a speaker. If two, use 1 & 2 etc...
 * EXTRA_ANNOTATION: TODO explain, more complicated.
 * WORD: 
+  
   -> verb: should be in the form of "he-past" both English and Hebrew, e.g. "walked", "הלך".
+  
   -> magic words: someone, his, him, someone+obj, Yuval, Amos, Meirav, מישהו, למישהו, היה+יהיה, שלו. You can find their corresponding replacements in file: TODO.
 
 ## Examples
