@@ -36,3 +36,5 @@ Known issues:
 1. patterns like "#_1_someone #_1_made #_2_someoneobj an omlete" generates
 also "I made **me** an omblete", instead of "I mande **myself** an omlete" (also generates "She made her an omblete", where but that's ok).
 
+2. No support yet for Hebrew imperative "#_1_עתיד_עשה ל#_1_מירב, בת#_2_ו, מקום"
+(in this example "תעשי", "תעשו", "תעשה")
