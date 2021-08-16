@@ -22,9 +22,9 @@ def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
     if WordType.VERB_ANNOTATION in attrs:
         pattern_type = WordType.VERB_ANNOTATION
     prefix = re.split("#_[0-9]+", word_pattern)[0]  # First characters before the #_NUMBER annotation.
-    if "נ" in attrs:
+    if "נ" in attrs or "F" in attrs:
         gender = Gender.SHE
-    elif "ז" in attrs:
+    elif "ז" in attrs or "M" in attrs:
         gender = Gender.HE
     else:
         gender = None
@@ -70,16 +70,17 @@ def populate_pattern(sent: str, lang: Language,
     parsed_words: List[AnnotatedWord] = [parse_word_pattern(pos, pattern) for pos, pattern in enumerate(
         pattern_words)]
 
-    # E.g. #_1_someone called #_2_someone => speaker_groups:= [1, 2]
+    # E.g. #_1_someone called #_2_someone+obj => speaker_groups:= [1, 2]
     speaker_groups: List[int] = list(sorted({word.speaker_group for word in parsed_words}))
     per_group_combinations: List[List[List[Tuple[str, int]]]] = []
     speaker: int
     for speaker in speaker_groups:
         speaker_words: List[AnnotatedWord] = [
             word for word in parsed_words if word.speaker_group == speaker]
-        group_combs = []
+        group_combs: List[List[Tuple[str, int]]] = []
         for gender, tense in [(Gender.I_F, Tense.PAST), (Gender.SHE, Tense.PAST), (Gender.SHE, Tense.PRESENT),
-                              (Gender.HE, Tense.PRESENT), (Gender.I_F, Tense.PRESENT), (Gender.I_M, Tense.PRESENT)]:
+                              (Gender.HE, Tense.PRESENT), (Gender.I_F, Tense.PRESENT), (Gender.I_M, Tense.PRESENT),
+                              (Gender.I_F, Tense.FUTURE), (Gender.HE, Tense.FUTURE), (Gender.HE, Tense.FUTURE)]:
             if (not tenses_white_list) or (tense in tenses_white_list):
                 group_combs.extend(get_all_combinations_for_single_speaker_group(speaker_words, gender, tense, lang))
         per_group_combinations.append(group_combs)
@@ -107,12 +108,13 @@ if __name__ == "__main__":
     dst_lang_input = input("Enter a pattern in English\n")
 
     # Current problem:
-    # הטלפון שלמישהו הלך אבידו
+    # הטלפון שלמישהו הלך לאיבוד
     # someone lost his phone
     print("Populating patterns")
     __black_list = []
     src_populated_patterns = populate_pattern(src_lang_input, Language.HEBREW)
     dst_populated_patterns = populate_pattern(dst_lang_input, Language.ENGLISH)
+    print("Asserting length!")
     assert len(src_populated_patterns) == len(dst_populated_patterns), f"{set(src_populated_patterns)}\
     n{set(dst_populated_patterns)}"
     __sentences = set(zip(src_populated_patterns, dst_populated_patterns))

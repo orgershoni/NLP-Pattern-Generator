@@ -10,6 +10,13 @@ no_tense_words_hebrew = {
         "He": [],
         "She": ["דנה", "מירב"],
         "We": [],
+        "I_F": [],
+        "I_M": [],
+    },
+    "מירב+מושא": {
+        "He": [],
+        "She": ["דנה", "מירב"],
+        "We": [],
         "I_F": ["דנה", "מירב"],
         "I_M": [],
     },
@@ -17,15 +24,29 @@ no_tense_words_hebrew = {
         "He": ["מיכאל", "עמוס"],
         "We": [],
         "She": [],
-        "I_M": ["מיכאל", "עמוס"],
+        "I_M": [],
         "I_F": []
     },
-    "יובל": {
+    "עמוס+מושא": {
+        "He": ["מיכאל", "עמוס"],
+        "We": ["מיכאל", "עמוס"],
+        "She": [],
+        "I_M": [],
+        "I_F": []
+    },
+    "יובל+מושא": {
         "He": ["מיכאל", "עמוס"],
         "She": ["ירדן", "ענבר"],
         "We": [],
         "I_M": ["מיכאל", "עמוס"],
         "I_F": ["ירדן", "ענבר"],
+    },
+    "יובל": {
+        "He": ["מיכאל", "עמוס"],
+        "She": ["ירדן", "ענבר"],
+        "We": [],
+        "I_M": [],
+        "I_F": [],
     },
     "שלו": {
         "I_M": ["שלי"],
@@ -52,9 +73,16 @@ no_tense_words_hebrew = {
     "עם+מישהו": {
         "I_F": ["איתי"],
         "I_M": ["איתי"],
-        "She": ["איתה", "עם האישי", "עם מירב"],
+        "She": ["איתה", "עם האישה", "עם מירב"],
         "He": ["איתו", "עם הילד", "עם עמרי"],
         "We": ["איתנו", "איתנו"],
+    },
+    "את+מישהו": {
+        "I_F": ["אותי"],
+        "I_M": ["אותי"],
+        "She": ["אותה", "את האישה", "את מירב"],
+        "He": ["אותו", "את הילד", "את עמרי"],
+        "We": ["אותנו", "אותנו"],
     },
     "לו": {
         "I_M": ["לי"],
@@ -109,26 +137,47 @@ no_tense_words_hebrew = {
 }
 
 no_tense_words_english = {
-    "Meirav": {
+    "Meirav+obj": {
         "He": [],
         "She": ["Dana", "Meirav"],
         "We": [],
         "I_F": ["Dana", "Meirav"],
         "I_M": []
     },
-    "Amos": {
+    "Meirav": {
+        "He": [],
+        "She": ["Dana", "Meirav"],
+        "We": [],
+        "I_F": [],
+        "I_M": []
+    },
+    "Amos+obj": {
         "He": ["Michael", "Amos"],
         "We": [],
         "She": [],
         "I_M": ["Michael", "Amos"],
         "I_F": []
     },
-    "Yuval": {
+    "Amos": {
+        "He": ["Michael", "Amos"],
+        "We": [],
+        "She": [],
+        "I_M": [],
+        "I_F": []
+    },
+    "Yuval+obj": {
         "He": ["Michael", "Amos"],
         "She": ["Yarden", "Inbar"],
         "We": [],
         "I_M": ["Michael", "Amos"],
         "I_F": ["Yarden", "Inbar"]
+    },
+    "Yuval": {
+        "He": ["Michael", "Amos"],
+        "She": ["Yarden", "Inbar"],
+        "We": [],
+        "I_M": [],
+        "I_F": []
     },
     "someone":
         {
@@ -303,7 +352,14 @@ class TenseFullRepsProvider:
         negate = word.endswith("n't")
         if tense == Tense.PAST:
             return [nle.verb.past(word, person=person, negate=negate)]
-        return [nle.verb.present(word, person=person, negate=negate)]
+        elif tense == Tense.PRESENT:
+            return [nle.verb.present(word, person=person, negate=negate)]
+        else:
+            if word == "didn't":
+                return ["won't"]
+            if word == "wasn't":
+                return ["won't be"]
+            return [f"will {nle.verb.infinitive(word)}"]
 
     @classmethod
     def has_replacements(cls, word: str, lang: Language, verbs={}):
