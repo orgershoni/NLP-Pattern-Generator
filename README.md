@@ -5,7 +5,7 @@ In order to test the ability of translation system to generalize well from Hebre
 of simple Hebrew-English parallel sentences.
 In this repository you can find the following:
 
-### Patterns populater
+### Patterns populater (patterns_populator.py)
 Given a parallel pattern in Hebrew and English, populates them in differet tesnses and "Actors", e.g.
 "#_1_someone #_1_called #_2_someone+obj", "#_1_מישהו #_1_קרא #_2_למישהו" 
 would be populated, resulting in:
@@ -19,6 +19,11 @@ would be populated, resulting in:
 * She calls the child, היא קוראת לילד
 * ...
 
+#### patterns format
+
+
+### Populate patterns and run translation: main.py
+Popultes the patterns given in the input file, translate them to English using a simple vanilla model, and computes the bleu score.
 
 ## Installation
 TODO
