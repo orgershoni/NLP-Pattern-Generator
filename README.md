@@ -30,7 +30,8 @@ the annotator pastes this part to the popultaed pattern. For example: "צלחת#
 * ...
 (Since the "ו" is a magic word, and the "צלחת" is a prefix).
 
-actor_index - tells the populator which tokens should be kept in sync in terms of gender and tense. E.g. "#_1_someone #_1_walked" would result in: 
+##### actor_index
+tells the populator which tokens should be kept in sync in terms of gender and tense. E.g. "#_1_someone #_1_walked" would result in: 
 * The child walked
 * The child walks
 * The chils will walk
@@ -43,6 +44,35 @@ While #_1_someone #_2_walked will result in:
 * I walk
 * I walk**s**
 
+##### magic_word
+A word with defined replacements, In order that matches between languages. For example
+"Someone" ->
+* He
+* The child
+* She
+* The woman
+* I
+* ...
+"Someone+obj" ->
+* him
+* him
+* her
+* her
+* me
+
+"מישהו" -> 
+* הוא
+* הילד
+* היא
+* האישה
+* אני
+
+"עם+מישהו" ->
+* איתו
+* איתו
+* איתה
+* איתה
+* איתי
 
 
 ### Populate patterns and run translation: main.py
