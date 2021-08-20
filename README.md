@@ -1,13 +1,26 @@
 # nlp_patterns_db
 
+## Background
+In order to test the ability of translation system to generalize well from Hebrew to English, we need a large data set
+of simple Hebrew-English parallel sentences.
+In this repository you can find the following:
+* Patterns populater - given a parallel pattern in Hebrew and English, populates them in differet tesnses and "Actors", e.g.
+"#_1_someone #_1_called #_2_someone+obj", "#_1_מישהו #_1_קרא #_2_למישהו" 
+would be populated, resulting in:
+I called the woman, אני קראתי לאישה
+I called the child, אני קראתי לילד
+I call the woman, אני קורא לאישה
+I call the child, אני קורא לילד
+She called the woman, היא קראה לאישה
+She called the child, היא קראה לילד
+he calls the woman, היא קוראת לאישה
+She calls the child, היא קוראת לילד
+...
+...
+
+
 ## Installation
-1. Should generally install nodebox_linguistics_extended package (currently copied it to a directory in this repository)
-https://github.com/RensaProject/nodebox_linguistics_extended
-### requirements
-wheel
-pandas
-nltk
-sgmllib3k
+TODO
 
 # Introduction
 The project provides a pattern populater - you provide a sentence in Hebrew/ English, using the following rules:
