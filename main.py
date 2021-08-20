@@ -1,5 +1,5 @@
 import he_en_translator
-from patterns_generator import populate_pattern
+from patterns_populator import populate_pattern
 from utils import compute_bleu
 from typing import List, Tuple
 import pandas as pd
@@ -26,7 +26,7 @@ def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
         text_to_translate += "\n".join(hebrew_sentences) + "\n"
         english_reference.extend(english_sentences)
         hebrew_src_sentences.extend(hebrew_sentences)
-    print("Translating src sentences")
+    print(f"Translating src sentences. Num lines: {len(text_to_translate.splitlines())}")
     translated_sentences = he_en_translator.translate(text_to_translate)
     bleu_scores = []
     print("Computing bleu")
