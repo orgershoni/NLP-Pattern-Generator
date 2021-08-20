@@ -20,6 +20,16 @@ would be populated, resulting in:
 
 #### patterns format
 The general token pattern is \[unchanged-prefix\]#\_\<actor_index\>\_\[\ANNOTATION\_\]<verb|magic_word>.
+
+##### unchanged-prefix 
+the annotator pastes this part to the popultaed pattern. For example: "צלחת#_1_ו" would result in:
+* צלחתו
+* צלחתי
+* צלחתנו
+* צלחתם
+* ...
+(Since the "ו" is a magic word, and the "צלחת" is a prefix).
+
 actor_index - tells the populator which tokens should be kept in sync in terms of gender and tense. E.g. "#_1_someone #_1_walked" would result in: 
 * The child walked
 * The child walks
@@ -32,6 +42,9 @@ While #_1_someone #_2_walked will result in:
 * The child walks
 * I walk
 * I walk**s**
+
+
+
 ### Populate patterns and run translation: main.py
 Popultes the patterns given in the input file, translate them to English using a simple vanilla model, and computes the bleu score.
 
