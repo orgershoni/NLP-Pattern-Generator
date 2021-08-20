@@ -4,7 +4,9 @@
 In order to test the ability of translation system to generalize well from Hebrew to English, we need a large data set
 of simple Hebrew-English parallel sentences.
 In this repository you can find the following:
-* Patterns populater - given a parallel pattern in Hebrew and English, populates them in differet tesnses and "Actors", e.g.
+
+### Patterns populater
+Given a parallel pattern in Hebrew and English, populates them in differet tesnses and "Actors", e.g.
 "#_1_someone #_1_called #_2_someone+obj", "#_1_מישהו #_1_קרא #_2_למישהו" 
 would be populated, resulting in:
 * I called the woman, אני קראתי לאישה
