@@ -2,8 +2,7 @@
 
 ## Background
 In order to test the ability of translation system to generalize well from Hebrew to English, we need a large data set
-of simple Hebrew-English parallel sentences.
-In this repository you can find the following:
+of simple Hebrew-English parallel sentences. Most of the work presented here is the engineering part, since the current used translation model is very weak, so the bleu scores are not represetitive.
 
 ### Patterns populater (patterns_populator.py)
 Given a parallel pattern in Hebrew and English, populates them in differet tesnses and "Actors", e.g.
@@ -20,8 +19,19 @@ would be populated, resulting in:
 * ...
 
 #### patterns format
-
-
+The general token pattern is \[unchanged-prefix\]#\_\<actor_index\>\_\[\ANNOTATION\_\]<verb|magic_word>.
+actor_index - tells the populator which tokens should be kept in sync in terms of gender and tense. E.g. "#_1_someone #_1_walked" would result in: 
+* The child walked
+* The child walks
+* The chils will walk
+* I walked
+* I walk
+* ...
+While #_1_someone #_2_walked will result in:
+* The child **walk**
+* The child walks
+* I walk
+* I walk**s**
 ### Populate patterns and run translation: main.py
 Popultes the patterns given in the input file, translate them to English using a simple vanilla model, and computes the bleu score.
 
