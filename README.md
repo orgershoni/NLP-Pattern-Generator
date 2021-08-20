@@ -46,6 +46,7 @@ While #_1_someone #_2_walked will result in:
 
 ##### magic_word
 A word with defined replacements, In order that matches between languages. For example
+
 "Someone" ->
 * He
 * The child
@@ -53,6 +54,7 @@ A word with defined replacements, In order that matches between languages. For e
 * The woman
 * I
 * ...
+
 "Someone+obj" ->
 * him
 * him
