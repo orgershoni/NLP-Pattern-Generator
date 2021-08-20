@@ -44,6 +44,9 @@ While #_1_someone #_2_walked will result in:
 * I walk
 * I walk**s**
 
+##### verb
+Verb in the form "he-past" (e.g. "הלך", "walked").
+
 ##### magic_word
 A word with defined replacements, In order that matches between languages. For example
 
@@ -75,6 +78,27 @@ A word with defined replacements, In order that matches between languages. For e
 * איתה
 * איתה
 * איתי
+
+"ו" ->
+* ו
+* ו
+* ה
+* ה
+* י
+
+##### annotation
+* "M"/ "ז" - tells the populator to treat the verb as if it was always in the form of "He".
+
+E.g. "הראש #_1_ז_כאב #_2_למישהו" would result in
+הראש כאב לעמרי
+הראש כאב לאישה
+...
+and avoid emitting:
+הראש כאבה לעמרי
+הראש כואבים לעמרי
+
+* "F"/ "נ" - tells the populator to treat the verb as if it was always in the form of "SHe".
+
 
 
 ### Populate patterns and run translation: main.py
