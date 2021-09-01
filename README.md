@@ -105,9 +105,10 @@ and avoid emitting:
 Popultes the patterns given in the input file, translate them to English using a simple vanilla model, and computes the bleu score.
 
 ## Installation
+Currently only working from huji environment (using absolute paths for the translation model), but the patterns generator should work from any python3 env.
+* Use the requirements file to install needed packages.
 * Note that the "nodebox_linguistics_extended" dir is an external library that I copied into this repository because
-its installation is sometimes problematic.
-
+its installation is sometimes problematic, should call "python setup.py" after "cd" to the directory.
 
 ## Work in progress
 1. patterns like "#_1_someone #_1_made #_2_someoneobj an omlete" generates
