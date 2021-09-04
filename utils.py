@@ -15,6 +15,7 @@ def compute_bleu(ref, translation):
 class Language(Enum):
     ENGLISH = 1
     HEBREW = 2
+    FRENCH = 3
 
 
 class Gender(Enum):
