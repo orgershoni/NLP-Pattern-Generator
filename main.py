@@ -1,11 +1,12 @@
 import he_en_translator
-from patterns_populator import populate_pattern
+from patterns_populator_ng import populate_pattern
 from utils import compute_bleu
 from typing import List, Tuple
 import pandas as pd
 import argparse
 import sys
 from utils import Language
+import tqdm
 
 
 def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
@@ -13,14 +14,16 @@ def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
     english_reference = []
     hebrew_src_sentences = []
     print("Starting to populate patterns")
-    for i, pair in enumerate(sentence_pairs):
+    for i, pair in tqdm.tqdm(enumerate(sentence_pairs)):
         # The generated hebrew and english sentences are parallel (in term of order).
-        hebrew_sentences = populate_pattern(pair[0], Language.HEBREW, None)
-        english_sentences = populate_pattern(pair[1], Language.ENGLISH, None)
+        hebrew_sentences = populate_pattern(pair[0], Language.HEBREW)
+        english_sentences = populate_pattern(pair[1], Language.ENGLISH)
         assert len(hebrew_sentences) == len(english_sentences), f"pattern: {i+1}\n {pair[0]}\n{pair[1]}\n" \
                                                                 f"{hebrew_sentences}\n{english_sentences}"
         # TODO explain why there are duplicates.
-        unique_pairs = list(dict.fromkeys(zip(hebrew_sentences, english_sentences)))
+        unique_pairs = set()
+        for meta, sentence in hebrew_sentences.items():
+            unique_pairs.add((sentence, english_sentences[meta]))
         hebrew_sentences = [pair[0] for pair in unique_pairs]
         english_sentences = [pair[1] for pair in unique_pairs]
         text_to_translate += "\n".join(hebrew_sentences) + "\n"

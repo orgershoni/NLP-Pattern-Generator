@@ -1,5 +1,5 @@
 from typing import Dict, Tuple, List
-from utils import Gender, Tense, Language
+from utils import Gender, Tense, Language, capitalize_first_letter
 from annotated_word import AnnotatedWord, WordType
 import nltk
 import replacements_providers
@@ -16,6 +16,9 @@ class Actor:
     def __eq__(self, other):
         return other.gender == self.gender and other.index == self.index and self.speaker_group == other.speaker_group
 
+    def __hash__(self):
+        return hash((self.gender, self.index, self.speaker_group))
+
 
 class ActionMetadata:
     def __init__(self, tense: Tense, verb_group: int):
@@ -25,6 +28,9 @@ class ActionMetadata:
     def __eq__(self, other):
         return self.tense == other.tense and self.verb_group == other.verb_group
 
+    def __hash__(self):
+        return hash((self.tense, self.verb_group))
+
 
 class PopulatedPattern:
     def __init__(self, actors: Dict[int, Actor], actions: Dict[int, ActionMetadata]):
@@ -33,6 +39,9 @@ class PopulatedPattern:
 
     def __eq__(self, other):
         return self.actors == other.actors and self.actions == other.actions
+
+    def __hash__(self):
+        return hash((frozenset(self.actors.items()), frozenset(self.actions.items())))
 
 
 def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
@@ -81,7 +90,7 @@ def tokenize(pattern: str) -> List[str]:
 
 def get_replacement(word: AnnotatedWord, actor: Actor, action_meta: ActionMetadata, lang: Language) -> str:
     gender_replacements = replacements_providers.get_replacements(word, actor.gender, action_meta.tense, lang)
-    if len(gender_replacements) > 1 and actor.index > len(gender_replacements) -1:
+    if len(gender_replacements) > 1 and actor.index > len(gender_replacements) - 1:
         return None
     return gender_replacements[actor.index] if len(gender_replacements) > 1 else gender_replacements[0]
 
@@ -99,7 +108,9 @@ def _pop_sentence(populated_pattern: PopulatedPattern, words: [AnnotatedWord], l
         else:
             word.new_word = word.actual_word
         populated_sentence.append(word)
-    s = " ".join([word.new_word for word in populated_sentence])
+    s = " ".join([(word.prefix + word.new_word) for word in populated_sentence])
+    s = s.replace(" .", ".").replace(" ,", ",").replace(" !", "!").replace(" ?", "?")
+    s = capitalize_first_letter(s)
     return s
 
 
@@ -119,7 +130,7 @@ def get_all_actions(verb_group):
 
 def populate_pattern(sent: str, lang: Language,
                      static_replacements_dict_or_none: Dict[str, str] = None,
-                     tenses_white_list: List[Tense] = None):
+                     tenses_white_list: List[Tense] = None) -> Dict[PopulatedPattern, str]:
     pattern_words: List[str] = tokenize(sent)
     parsed_words: List[AnnotatedWord] = [parse_word_pattern(pos, pattern) for pos, pattern in enumerate(
         pattern_words)]
@@ -128,60 +139,17 @@ def populate_pattern(sent: str, lang: Language,
     actions = actions if actions else [1]
     actors = [get_all_actors(sg) for sg in speaker_groups]
     all_actions = [(get_all_actions(ac)) for ac in actions]
-    out = []
+    out = {}
     for actors_assignment in itertools.product(*actors):
         for actions_assignment in itertools.product(*all_actions):
             p = PopulatedPattern({actor.speaker_group: actor for actor in actors_assignment},
                                  {action.verb_group: action for action in actions_assignment})
             s = _pop_sentence(p, parsed_words, lang)
             if s:
-                out.append((p, s))
+                out[p] = s
     return out
 
-def main():
+
+if __name__ == "__main__":
     out1 = populate_pattern("#_1_someone #_1_missed #_2_someone+obj", Language.ENGLISH)
     out2 = populate_pattern("#_2_מישהו #_2_חסר #_1_למישהו", Language.HEBREW)
-    print(out1)
-    print(out2)
-    for var in out1:
-        for var2 in out2:
-            if var2[0] == var[0]:
-                print(var[1])
-                print(var2[1])
-                print("---")
-if __name__ == "__main__":
-    main()
-    #p = PopulatedPattern({1: Actor(Gender.SHE, 2),
-    #                      2: Actor(Gender.HE, 2)}, {1: ActionMetadata(Tense.FUTURE, Gender.SHE)})
-    # w = AnnotatedWord("", "someone", 0, 1, WordType.MAGIC)
-    # w.action_id = 1
-    # w2 = AnnotatedWord("", "missed", 0, 1, WordType.MAGIC)
-    # w2.action_id = 1
-    # w3 = AnnotatedWord("", "someone+obj", 0, 2, WordType.MAGIC)
-    # w3.action_id = 1
-    # _pop_sentence(p, [w, w2, w3], Language.ENGLISH)
-    #
-    # w = AnnotatedWord("", "מישהו", 0, 2, WordType.MAGIC)
-    # w.action_id = 1
-    # w2 = AnnotatedWord("", "חסר", 0, 2, WordType.MAGIC)
-    # w2.action_id = 1
-    # w3 = AnnotatedWord("", "למישהו", 0, 1, WordType.MAGIC)
-    # w3.action_id = 1
-    # _pop_sentence(p, [w, w2, w3], Language.HEBREW)
-
-    # w = AnnotatedWord("", "מישהו", 0, 1, WordType.MAGIC)
-    # w.action_id = 1
-    # w2 = AnnotatedWord("", "אכל", 0, 1, WordType.MAGIC)
-    # w2.action_id = 1
-    # w3 = AnnotatedWord("", "הרבה כי", 0, 1, WordType.REGULAR)
-    # w3.action_id = 1
-    # w4 = AnnotatedWord("", "הוא", 0, 1, WordType.MAGIC)
-    # w4.action_id = 1
-    # w5 = AnnotatedWord("", "ירד", 0, 1, WordType.MAGIC)
-    # w5.action_id = 2
-    # w6 = AnnotatedWord("", "במשקל", 0, 1, WordType.REGULAR)
-    #
-    # p = PopulatedPattern({1: Actor(Gender.SHE, 2)}, {1: ActionMetadata(Tense.FUTURE, Gender.SHE), 2: ActionMetadata(
-    #     Tense.PRESENT, Gender.SHE)})
-    # _pop_sentence(p, [w, w2, w3, w4, w5, w6], Language.HEBREW)
-
