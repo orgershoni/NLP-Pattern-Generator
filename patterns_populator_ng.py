@@ -90,8 +90,11 @@ def tokenize(pattern: str) -> List[str]:
 
 def get_replacement(word: AnnotatedWord, actor: Actor, action_meta: ActionMetadata, lang: Language) -> str:
     gender_replacements = replacements_providers.get_replacements(word, actor.gender, action_meta.tense, lang)
+    if not gender_replacements:
+        return None
     if len(gender_replacements) > 1 and actor.index > len(gender_replacements) - 1:
         return None
+    print(f"len(gender_replacements): {len(gender_replacements)}, word: {word}")
     return gender_replacements[actor.index] if len(gender_replacements) > 1 else gender_replacements[0]
 
 
