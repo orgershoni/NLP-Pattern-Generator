@@ -7,10 +7,12 @@ import argparse
 import sys
 from utils import Language
 import tqdm
+import google_translate
 
 
-def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
-    text_to_translate = ""
+def generate_sentences(sentence_pairs: List[Tuple[str, str]]):
+
+    heb_text_to_translate = []
     english_reference = []
     hebrew_src_sentences = []
     print("Starting to populate patterns")
@@ -26,11 +28,18 @@ def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
             unique_pairs.add((sentence, english_sentences[meta]))
         hebrew_sentences = [pair[0] for pair in unique_pairs]
         english_sentences = [pair[1] for pair in unique_pairs]
-        text_to_translate += "\n".join(hebrew_sentences) + "\n"
+        heb_text_to_translate.extend(hebrew_sentences)
         english_reference.extend(english_sentences)
         hebrew_src_sentences.extend(hebrew_sentences)
-    print(f"Translating src sentences. Num lines: {len(text_to_translate.splitlines())}")
-    translated_sentences = he_en_translator.translate(text_to_translate)
+
+    return heb_text_to_translate, english_reference, hebrew_src_sentences
+
+
+def main(sentence_pairs: List[Tuple[str, str]], output_path: str):
+
+    heb_sentences, english_reference, hebrew_src_sentences = generate_sentences(sentence_pairs)
+    print(f"Translating src sentences. Num lines: {len(heb_sentences)}")
+    translated_sentences = google_translate.Translator().translate(heb_sentences, Language.HEBREW, Language.ENGLISH)
     bleu_scores = []
     print("Computing bleu")
     for translated_sent, sent_ref in zip(translated_sentences, english_reference):

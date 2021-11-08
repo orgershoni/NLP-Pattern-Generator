@@ -10,12 +10,12 @@ _language_code_639 = {
     Language.FRENCH: "fr",
 }
 
+CRED_FILE_PATH = r"/home/orgersh/Desktop/service-account-file.json"
 
 class Translator:
 
     def __init__(self):
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\Users\omryg\Downloads\prefab-research-113417-7d917e3533d8" \
-                                                     r".json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CRED_FILE_PATH
         self._translate_client = translate_v2.Client()
 
     def translate(self, sentences: List[str], src_lang: Language, dst_lang: Language):
