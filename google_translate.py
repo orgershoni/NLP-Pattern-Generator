@@ -8,6 +8,7 @@ _language_code_639 = {
     Language.ENGLISH: "en",
     Language.HEBREW: "he",
     Language.FRENCH: "fr",
+    Language.ARABIC: "ar",
 }
 
 CRED_FILE_PATH = r"/home/orgersh/Desktop/service-account-file.json"

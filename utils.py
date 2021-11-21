@@ -16,6 +16,7 @@ class Language(Enum):
     ENGLISH = 1
     HEBREW = 2
     FRENCH = 3
+    ARABIC = 4
 
 
 class Gender(Enum):

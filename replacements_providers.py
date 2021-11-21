@@ -8,13 +8,25 @@ from replacments_db import *
 class TenseLessRepsProvider:
 
     @classmethod
+    def get_dictionary(cls, lang: Language):
+
+        if lang == Language.HEBREW:
+            return no_tense_words_hebrew
+        if lang == Language.ENGLISH:
+            return no_tense_words_english
+        if lang == Language.ARABIC:
+            return no_tense_words_arabic
+
+        raise KeyError(f"{lang} is not fully supported in TenseLessRepsProvider")
+
+    @classmethod
     def get_replacements(cls, word: str, gender: Gender, tense: Tense, lang: Language):
-        d = no_tense_words_hebrew if lang == Language.HEBREW else no_tense_words_english
+        d = TenseLessRepsProvider.get_dictionary(lang)
         return d[word][gender.value]
 
     @classmethod
     def has_replacements(cls, word: str, lang: Language):
-        d = no_tense_words_hebrew if lang == Language.HEBREW else no_tense_words_english
+        d = TenseLessRepsProvider.get_dictionary(lang)
         return word in d
 
 
@@ -30,6 +42,11 @@ class TenseFullRepsProvider:
             if word in tense_full_hebrew:
                 return tense_full_hebrew[word][tense.value][gender.value]
             return [verbs[word][tense.value][gender.value]]
+        if lang == Language.ARABIC:
+            if word in tense_full_arabic:
+                return tense_full_arabic[word][tense.value][gender.value]
+            #return [verbs[word][tense.value][gender.value]]
+
         person = str(gender_to_person[gender])
         negate = word.endswith("n't")
         if tense == Tense.PAST:
@@ -51,6 +68,9 @@ class TenseFullRepsProvider:
 
         if lang == Language.HEBREW:
             return word in tense_full_hebrew or word in verbs
+        if lang == Language.ARABIC:
+            return word in tense_full_arabic # TODO : or word in verbs -> verbs is arabic ?
+
         try:
             cls.get_replacements(word, Gender.HE, Tense.PAST, Language.ENGLISH)
             return True
