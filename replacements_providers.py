@@ -1,4 +1,5 @@
 from hebrew_verbs_provider import create_verbs_table
+from arabic_verbs_provider import load_verbs_from_json
 from typing import List
 from utils import Language, Gender, Tense
 from annotated_word import WordType, AnnotatedWord
@@ -35,8 +36,11 @@ class TenseFullRepsProvider:
     @classmethod
     def get_replacements(cls, word: str, gender: Gender, tense: Tense, lang: Language, verbs={}):
         if not verbs:
-            verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
-            verbs.update(verbs_table)
+            if lang == Language.HEBREW:
+                verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
+                verbs.update(verbs_table)
+            if lang == Language.ARABIC:
+                verbs = load_verbs_from_json()
 
         if lang == Language.HEBREW:
             if word in tense_full_hebrew:
@@ -45,7 +49,7 @@ class TenseFullRepsProvider:
         if lang == Language.ARABIC:
             if word in tense_full_arabic:
                 return tense_full_arabic[word][tense.value][gender.value]
-            #return [verbs[word][tense.value][gender.value]]
+            return [verbs[word][tense.value][gender.value]]
 
         person = str(gender_to_person[gender])
         negate = word.endswith("n't")
@@ -63,13 +67,16 @@ class TenseFullRepsProvider:
     @classmethod
     def has_replacements(cls, word: str, lang: Language, verbs={}):
         if not verbs:
-            verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
-            verbs.update(verbs_table)
+            if lang == Language.HEBREW:
+                verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
+                verbs.update(verbs_table)
+            if lang == Language.ARABIC:
+                verbs = load_verbs_from_json()
 
         if lang == Language.HEBREW:
             return word in tense_full_hebrew or word in verbs
         if lang == Language.ARABIC:
-            return word in tense_full_arabic # TODO : or word in verbs -> verbs is arabic ?
+            return word in tense_full_arabic or word in verbs
 
         try:
             cls.get_replacements(word, Gender.HE, Tense.PAST, Language.ENGLISH)
