@@ -1,5 +1,5 @@
 from hebrew_verbs_provider import create_verbs_table
-from arabic_verbs_provider import load_verbs_from_json
+from arabic_verbs_provider import load_verbs_from_json, ArabicTransformer
 from typing import List
 from utils import Language, Gender, Tense
 from annotated_word import WordType, AnnotatedWord
@@ -49,7 +49,7 @@ class TenseFullRepsProvider:
         if lang == Language.ARABIC:
             if word in tense_full_arabic:
                 return tense_full_arabic[word][tense.value][gender.value]
-            return [verbs[word][tense.value][gender.value]]
+            return ArabicTransformer().reinflect(word, tense, gender)
 
         person = str(gender_to_person[gender])
         negate = word.endswith("n't")

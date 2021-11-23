@@ -11,7 +11,6 @@ def capitalize_first_letter(st: str):
 def compute_bleu(ref, translation):
     return nltk.translate.bleu_score.sentence_bleu([ref], translation)
 
-
 class Language(Enum):
     ENGLISH = 1
     HEBREW = 2
