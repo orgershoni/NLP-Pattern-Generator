@@ -59,7 +59,7 @@ class ArabicTransformer:
 
         results = self._reinflect(canonical_form, feats, dediac)
         if force_single_output and results:
-            return results.pop()
+            return [results.pop()]
 
         return list(results)
 

@@ -1,4 +1,4 @@
-# import nltk
+import nltk
 from enum import Enum
 
 

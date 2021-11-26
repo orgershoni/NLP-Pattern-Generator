@@ -50,7 +50,8 @@ class TenseFullRepsProvider:
         if lang == Language.ARABIC:
             if word in tense_full_arabic:
                 return tense_full_arabic[word][tense.value][gender.value]
-            return ArabicTransformer().reinflect(word, tense, gender)
+            return ArabicTransformer().reinflect(canonical_form=word,
+                                                 gender=gender, tense=tense)
 
         person = str(gender_to_person[gender])
         negate = word.endswith("n't")
