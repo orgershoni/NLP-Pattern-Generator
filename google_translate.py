@@ -13,6 +13,7 @@ _language_code_639 = {
 
 CRED_FILE_PATH = r"/home/orgersh/Desktop/service-account-file.json"
 
+
 class Translator:
 
     def __init__(self):

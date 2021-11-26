@@ -424,8 +424,7 @@ tense_full_hebrew = {
 tense_full_hebrew["אין"] = tense_full_hebrew["היה+אין"]
 
 
-
-tense_full_arabic = {       # not sure we need it in arabic
+tense_full_arabic = {       # not sure we need it in data
     "كان": {
         "PRESENT": {
             "She": [""],
@@ -449,15 +448,4 @@ tense_full_arabic = {       # not sure we need it in arabic
             "I_F": ["اكن"]
         },
     },
-}
-
-gender_to_person = {
-    Gender.HE: 3,
-    Gender.SHE: 3,
-    Gender.THEY: 3,
-    Gender.I_F: 1,
-    Gender.I_M: 1,
-    Gender.WE_F: 1,
-    Gender.WE_M: 1,
-    Gender.YOU: 2
 }

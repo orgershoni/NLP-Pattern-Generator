@@ -5,6 +5,7 @@ from utils import Language, Gender, Tense
 from annotated_word import WordType, AnnotatedWord
 import nodebox_linguistics_extended as nle
 from replacments_db import *
+from utils import *
 
 class TenseLessRepsProvider:
 

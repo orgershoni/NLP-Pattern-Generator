@@ -1,4 +1,4 @@
-import nltk
+# import nltk
 from enum import Enum
 
 
@@ -33,3 +33,14 @@ class Tense(Enum):
     PAST = "PAST"
     PRESENT = "PRESENT"
     FUTURE = "FUTURE"
+
+gender_to_person = {
+    Gender.HE: 3,
+    Gender.SHE: 3,
+    Gender.THEY: 3,
+    Gender.I_F: 1,
+    Gender.I_M: 1,
+    Gender.WE_F: 1,
+    Gender.WE_M: 1,
+    Gender.YOU: 2
+}
