@@ -55,16 +55,21 @@ class TenseFullRepsProvider:
 
         person = str(gender_to_person[gender])
         negate = word.endswith("n't")
-        if tense == Tense.PAST:
-            return [nle.verb.past(word, person=person, negate=negate)]
-        elif tense == Tense.PRESENT:
-            return [nle.verb.present(word, person=person, negate=negate)]
-        else:
-            if word == "didn't":
-                return ["won't"]
-            if word == "wasn't":
-                return ["won't be"]
-            return [f"will {nle.verb.infinitive(word)}"]
+        is_plural = is_gender_plural(gender)
+
+        try : # trying verb
+            if tense == Tense.PAST:
+                return [nle.verb.past(word, person=person, negate=negate)]
+            elif tense == Tense.PRESENT:
+                return [nle.verb.present(word, person=person, negate=negate)]
+            else:
+                if word == "didn't":
+                    return ["won't"]
+                if word == "wasn't":
+                    return ["won't be"]
+                return [f"will {nle.verb.infinitive(word)}"]
+        except KeyError:
+            return nle.noun.plural(word=word) if is_plural else nle.noun.singular(word=word)
 
     @classmethod
     def has_replacements(cls, word: str, lang: Language, verbs={}):

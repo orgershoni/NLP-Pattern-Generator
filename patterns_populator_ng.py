@@ -90,7 +90,11 @@ def tokenize(pattern: str) -> List[str]:
 
 def get_replacement(word: AnnotatedWord, actor: Actor, action_meta: ActionMetadata, lang: Language) -> str:
 
-    gender_replacements = replacements_providers.get_replacements(word, actor.gender, action_meta.tense, lang)
+    try:
+        gender_replacements = replacements_providers.get_replacements(word, actor.gender, action_meta.tense, lang)
+    except KeyError:
+        print(f"Failed for word={word}, gender={actor.gender}, tense={action_meta.tense}, lang={lang}")
+        exit(1)
 
     if not gender_replacements:
         return None

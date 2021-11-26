@@ -44,3 +44,9 @@ gender_to_person = {
     Gender.WE_M: 1,
     Gender.YOU: 2
 }
+
+def is_gender_plural(gender : Gender):
+
+    return gender == Gender.WE_M or\
+           gender == Gender.WE_F or\
+           gender == Gender.THEY

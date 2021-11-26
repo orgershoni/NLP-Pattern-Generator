@@ -48,14 +48,22 @@ class ArabicTransformer:
         analysis = self.analyze(canonical_form)
         return analysis['pos']
 
-    def reinflect(self, canonical_form: str, gender: Gender = Gender.HE,
-                  is_active: bool = True, tense: Tense = None, dediac:
-                  bool = True, force_single_output = True):
+    def is_possessive(self, canonical_form: str):
+        analysis = self.analyze(canonical_form)
+        return 'poss' in analysis['enc0']
 
+    def reinflect(self, canonical_form: str, gender: Gender = Gender.HE,
+                  is_active: bool = True, tense: Tense = None,
+                  dediac: bool = True, force_single_output = True):
+
+        is_possessive = self.is_possessive(canonical_form)
         if self.get_pos(canonical_form) == 'noun' or not tense:
-            feats = self.noun_gender_to_features(gender)
+            if is_possessive:
+                feats = self.get_features_for_possessive_noun(gender)
+            else:
+                feats = self.get_features_for_noun(gender)
         else:
-            feats = self.generate_verb_feats(gender, tense, is_active)
+            feats = self.get_feats_for_verb(gender, tense, is_active)
 
         results = self._reinflect(canonical_form, feats, dediac)
         if force_single_output and results:
@@ -63,10 +71,10 @@ class ArabicTransformer:
 
         return list(results)
 
-    def generate_verb_feats(self, gender: Gender,
-                            tense: Tense, is_active: bool=True):
+    def get_feats_for_verb(self, gender: Gender,
+                           tense: Tense, is_active: bool=True):
 
-        feats = ArabicTransformer.gender_to_features(gender)
+        feats = ArabicTransformer._gender_to_features(gender)
         feats.update(ArabicTransformer.feats_by_tense(tense))
         feats['vox'] = 'a' if is_active else 'p'
 
@@ -97,52 +105,68 @@ class ArabicTransformer:
         return self.analyzer.analyze(canonical_form)[-1]
 
     @staticmethod
-    def gender_to_features(gender: Gender):
+    def _gender_to_features(gender: Gender):
 
         gen = ""
         num = ""
+        person = ""
         if gender == Gender.HE:
             gen = 'm'
             num = 's'
+            person = '3'
         if gender == Gender.SHE:
             gen = 'f'
             num = 's'
+            person = '3'
         if gender == Gender.WE_F:
             gen = 'm'
             num = 'p'
+            person = '1'
         if gender == Gender.WE_M:
             gen = 'm'
             num = 'p'
+            person = '1'
         if gender == Gender.THEY:
             gen = 'm'
             num = 'p'
+            person = '3'
         if gender == Gender.I_F:
             gen = 'm'
             num = 's'
+            person = '1'
         if gender == Gender.I_M:
             gen = 'm'
             num = 's'
+            person = '1'
         if gender == Gender.YOU:
             gen = 'm'
             num = 's'
+            person = '2'
 
         return {
             'gen': gen,
             'num': num,
-            'per': str(gender_to_person[gender])
+            'per': person
         }
 
     @staticmethod
-    def noun_gender_to_features(gender: Gender):
+    def get_features_for_possessive_noun(gender: Gender):
 
-        feats = ArabicTransformer.gender_to_features(gender)
+        feats = ArabicTransformer._gender_to_features(gender)
 
-        if feats['per'] == '1': # in data no need for gender in 1st person
+        if feats['per'] == '1': # in arabic no need for gender in 1st person
             enc0 = f"{feats['per']}{feats['num']}_poss"
         else:
             enc0 = f"{feats['per']}{feats['gen']}{feats['num']}_poss"
 
-        return {'enc0': enc0}
+        return {'enc0': enc0, 'prc0': '0'}
+
+    @staticmethod
+    def get_features_for_noun(gender: Gender):
+
+        feats = ArabicTransformer._gender_to_features(gender)
+        del feats['per']
+        return feats
 
     @staticmethod
     def feats_by_tense(tense: Tense):
