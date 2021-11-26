@@ -1,5 +1,5 @@
 from hebrew_verbs_provider import create_verbs_table
-from arabic_verbs_provider import load_verbs_from_json, ArabicTransformer
+from arabic_verbs_provider import ArabicTransformer
 from typing import List
 from utils import Language, Gender, Tense
 from annotated_word import WordType, AnnotatedWord
@@ -40,8 +40,8 @@ class TenseFullRepsProvider:
             if lang == Language.HEBREW:
                 verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
                 verbs.update(verbs_table)
-            if lang == Language.ARABIC:
-                verbs = load_verbs_from_json()
+            # if lang == Language.ARABIC:
+            #     verbs = load_verbs_from_json()
 
         if lang == Language.HEBREW:
             if word in tense_full_hebrew:
@@ -72,18 +72,19 @@ class TenseFullRepsProvider:
             if lang == Language.HEBREW:
                 verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
                 verbs.update(verbs_table)
-            if lang == Language.ARABIC:
-                verbs = load_verbs_from_json()
+            # if lang == Language.ARABIC:
+            #     verbs = load_verbs_from_json()
 
         if lang == Language.HEBREW:
             return word in tense_full_hebrew or word in verbs
-        if lang == Language.ARABIC:
-            return word in tense_full_arabic or word in verbs
+        # if lang == Language.ARABIC:
+        #     return word in tense_full_arabic or word in verbs
 
         try:
-            cls.get_replacements(word, Gender.HE, Tense.PAST, Language.ENGLISH)
+            cls.get_replacements(word, Gender.HE, Tense.PAST, lang)
             return True
         except KeyError:
+            print(f"Failed for word: {word}, language {lang}")
             return False
 
 
@@ -92,7 +93,8 @@ def get_replacements(word: AnnotatedWord, gender: Gender, tense: Tense,
     if word.type == WordType.REGULAR:
         return [word.pattern]
     word = word.actual_word
-    if TenseFullRepsProvider.has_replacements(word, lang):
-        return TenseFullRepsProvider.get_replacements(word, gender, tense, lang)
-    else:
+    if TenseLessRepsProvider.has_replacements(word, lang):
         return TenseLessRepsProvider.get_replacements(word, gender, tense, lang)
+    else:
+        return TenseFullRepsProvider.get_replacements(word, gender, tense, lang)
+
