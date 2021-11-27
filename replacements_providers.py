@@ -69,7 +69,7 @@ class TenseFullRepsProvider:
                     return ["won't be"]
                 return [f"will {nle.verb.infinitive(word)}"]
         except KeyError:
-            return nle.noun.plural(word=word) if is_plural else nle.noun.singular(word=word)
+            return [nle.noun.plural(word=word) if is_plural else nle.noun.singular(word=word)]
 
     @classmethod
     def has_replacements(cls, word: str, lang: Language, verbs={}):

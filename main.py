@@ -34,12 +34,28 @@ def generate_sentences(sentence_pairs: List[Tuple[str, str]], src: Language, des
 
     return src_text_to_translate, dest_reference, src_orig_sentences
 
+def chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in range(0, len(l), n))
+
+MAX_SENTENCES_BY_GOOGLE_TRANSLATE = 100
+def translate(sentences, src: Language, dest : Language):
+
+    splitted_sentences = chunks(sentences, MAX_SENTENCES_BY_GOOGLE_TRANSLATE)
+    translated = []
+    for src_sentences in splitted_sentences:
+        translated_sentences = google_translate.Translator().translate(src_sentences, src, dest)
+        translated.extend(translated_sentences)
+
+    return translated
+
 
 def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, output_path: str):
 
     src_sentences, dest_reference, src_orig_sentences = generate_sentences(sentence_pairs, src, dest)
     print(f"Translating src sentences. Num lines: {len(src_sentences)}")
-    translated_sentences = google_translate.Translator().translate(src_sentences, src, dest)
+
+    translated_sentences = translate(src_sentences, src, dest)
     bleu_scores = []
     print("Computing bleu")
     for translated_sent, sent_ref in zip(translated_sentences, dest_reference):

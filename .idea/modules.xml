@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/nlp_patterns_db.iml" filepath="$PROJECT_DIR$/.idea/nlp_patterns_db.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/NLP-Pattern-Generator.iml" filepath="$PROJECT_DIR$/.idea/NLP-Pattern-Generator.iml" />
     </modules>
   </component>
 </project>

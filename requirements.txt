@@ -7,3 +7,4 @@ sgmllib3k>=1.0.0
 six>=1.16.0
 tqdm>=4.61.2
 google-cloud-translate>=2.0.1
+camel_tools
