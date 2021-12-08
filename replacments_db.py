@@ -307,8 +307,8 @@ no_tense_words_english = {
         "I_M": []
     },
     "physical+object": {
-        "She": ["car", "bed"],
-        "He": ["box", "refrigerator", "horse"],
+        "She": ["car", "refrigerator"],
+        "He": ["book", "apple", "horse"],
         "We": [],
         "I_F": [],
         "I_M": []
