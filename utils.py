@@ -60,3 +60,7 @@ def encode_arabic(arabic_txt : str):
 
     reshaped_text = arabic_reshaper.reshape(arabic_txt)    # correct its shape
     return get_display(reshaped_text)           # correct its direction
+
+def chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in range(0, len(l), n))

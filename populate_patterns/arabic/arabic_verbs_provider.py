@@ -208,7 +208,7 @@ class ArabicTransformer:
         return {}
     
     def disambiguation(self, base_form : str, context : str = ""):
-
+      from cache_manager.manager import g_cache_manager
       def get_user_input(options, base_form : str):
 
         msg = ''.join(options)
@@ -226,10 +226,15 @@ class ArabicTransformer:
       analyses = list(self.analyze(base_form, single_output=False))
       meanings = sorted(list(set([props['stemgloss'] for props in analyses])))
       if len(meanings) > 1:
-        options = [f"{idx} : {meaning}\n" for idx,meaning in enumerate(meanings)]
-        user_input_idx = get_user_input(options, base_form)
         
-        meaning = meanings[user_input_idx]
+        try:
+            idx = g_cache_manager.load_disambiguity(context)
+        except ValueError:
+            options = [f"{idx} : {meaning}\n" for idx,meaning in enumerate(meanings)]
+            idx = get_user_input(options, base_form)
+            g_cache_manager.cache_disambiguity(context, idx)
+        
+        meaning = meanings[idx]
         for analysis in analyses:
           if analysis['stemgloss'] == meaning:
             return analysis

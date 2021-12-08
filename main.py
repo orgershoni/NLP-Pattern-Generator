@@ -4,59 +4,52 @@ import pandas as pd
 import argparse
 import sys
 from utils import Language
-import translators.google_translate as google_translate
-from populate_patterns.main import populate 
+from translators.translate import translate
+from populate_patterns.main import populate
+from estimation.bleu import bleu
 
 
 
 def parse_args(parser):
     parser.add_argument("patterns_file", type=str, help="file of format TODO of patterns.", default="")
-    parser.add_argument("src_language", type=str, help=f"supported languages: {[e.name for e in Language]}", default="")
-    parser.add_argument("dest_language", type=str, help=f"supported languages: {[e.name for e in Language]}", default="")
+    parser.add_argument("src_language", type=str, choices=[e.name for e in Language], default="")
+    parser.add_argument("dest_language", type=str, choices=[e.name for e in Language], default="")
     parser.add_argument("-o", "--output_path", help="output path", default="scores.csv")
     parser.add_argument("--pattern_indices", action='append', type=int, help="index of pattern in pattern file, "
                                                                              "0-based index.")
+    parser.add_argument("-rcd", "--remove-disambg-cache", help="remove disambiguity cache", action='store_true', default=False)
+
     args = parser.parse_args(sys.argv[1:])
-    src, dest = parse_languages(args.src_language, args.dest_language)
+
+    src = Language[args.src_language]
+    dest = Language[args.dest_language]
+    
     df = pd.read_csv(args.patterns_file, encoding="utf-8", header=None)
     patterns = list(df.itertuples(index=False, name=None))
     if args.pattern_indices:
         patterns = [patterns[i] for i in args.pattern_indices]
     print(f"Num patterns: {len(patterns)}")
-    return patterns, src, dest, args.output_path
 
-def chunks(l, n):
-    n = max(1, n)
-    return (l[i:i+n] for i in range(0, len(l), n))
+    return patterns, src, dest, args.output_path, args.remove_disambg_cache
 
-MAX_SENTENCES_BY_GOOGLE_TRANSLATE = 100
-def translate(sentences, src: Language, dest : Language):
-
-    splitted_sentences = chunks(sentences, MAX_SENTENCES_BY_GOOGLE_TRANSLATE)
-    translated = []
-    for src_sentences in splitted_sentences:
-        translated_sentences = google_translate.Translator().translate(src_sentences, src, dest)
-        translated.extend(translated_sentences)
-
-    return translated
-
-
-def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, output_path: str):
+def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, output_path: str, remove_disambiguity_cache=False):
 
     print(f"Generating setences out of {len(sentence_pairs)} patterns")
-    src_sentences, dest_reference, src_orig_sentences = populate(sentence_pairs, src, dest)
-    
+    src_sentences, dest_reference, src_orig_sentences = populate(sentence_pairs, src, dest, remove_disambiguity_cache)
+
     print(f"Translating src sentences. Num lines: {len(src_sentences)}")
     translated_sentences = translate(src_sentences, src, dest)
-    bleu_scores = []
+    
     print("Computing bleu")
-    for translated_sent, sent_ref in zip(translated_sentences, dest_reference):
-        bleu_scores.append(compute_bleu(sent_ref, translated_sent))
-    out_df = pd.DataFrame.from_dict({"Hebrew src": src_orig_sentences,
-                                     "English Reference": dest_reference,
-                                     "English Translation": translated_sentences,
-                                     "Score": bleu_scores})
-    out_df.to_csv(output_path, encoding="utf-8")
+    bleu_scores = bleu(translated_sentences, dest_reference)
+
+    # Save to csv
+    pd.DataFrame.from_dict({"Hebrew src": src_orig_sentences,
+                            "English Reference": dest_reference,
+                            "English Translation": translated_sentences,
+                            "Bleu Score": bleu_scores,
+                            }) \
+                            .to_csv(output_path, encoding="utf-8")
 
 
 def parse_languages(src_language:str, dest_language:str) -> Tuple[Language, Language]:

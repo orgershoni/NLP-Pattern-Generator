@@ -12,7 +12,7 @@ _language_code_639 = {
 }
 
 CRED_FILE_PATH = r"/cs/snapless/oabend/or.gershoni/Or/google_auth.json"
-
+MAX_QUATA = 100
 
 class Translator:
 

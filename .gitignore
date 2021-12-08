@@ -6,6 +6,7 @@ scores.csv
 .vscode/
 venv_name/
 slurm*.out
+cache/
 
 # C extensions
 *.so

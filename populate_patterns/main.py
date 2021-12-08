@@ -3,6 +3,7 @@ from .general.patterns_populator_ng import _populate_pattern, _preprocess_popula
 from typing import List, Tuple, Dict
 from utils import Language
 from joblib import Parallel, delayed
+from cache_manager.manager import CacheOptions, g_cache_manager
 
 class PopulateTask:
 
@@ -19,10 +20,12 @@ def populate_pattern(populate_task : PopulateTask):
     populate_task.generated_sentences = _populate_pattern(populate_task.parsed_words, populate_task.lang)
     return populate_task
 
-def resolve_disambiguity(populated_tasks : List[PopulateTask]):
+def resolve_disambiguity(populated_tasks : List[PopulateTask], cache_exists_ok=False):
 
+    g_cache_manager.start_caching(CacheOptions.DISAMBIGUITY, exists_ok=cache_exists_ok)
     for task in populated_tasks:
         task.parsed_words = _preprocess_population(task.raw_pattern, task.lang)
+    g_cache_manager.end_caching(CacheOptions.DISAMBIGUITY)
     return populated_tasks
 
 def get_population_tasks(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language):
@@ -52,7 +55,7 @@ def validate_population(src_sentences : List[Dict], dest_sentences : List[Dict])
     src_orig_sentences = []
 
     for i, (src_sentences, dest_sentences) in enumerate(zip(src_sentences, dest_sentences)):
-        assert len(src_sentences) == len(dest_sentences), f"pattern: {i+1}\n {pair[0]}\n{pair[1]}\n" \
+        assert len(src_sentences) == len(dest_sentences), f"pattern: {i+1}\n {src_sentences}\n{dest_sentences}\n" \
                                                                 f"{src_sentences}\n{dest_sentences}"
         # TODO explain why there are duplicates.
         unique_pairs = set()
@@ -66,10 +69,10 @@ def validate_population(src_sentences : List[Dict], dest_sentences : List[Dict])
 
     return src_text_to_translate, dest_reference, src_orig_sentences
 
-def populate(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language):
+def populate(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, remove_disambguity_cache : bool):
 
     tasks = get_population_tasks(sentence_pairs, src, dest)
-    tasks =  resolve_disambiguity(tasks)
+    tasks =  resolve_disambiguity(tasks, remove_disambguity_cache)
     tasks = Parallel(n_jobs=-1, verbose=50)(delayed(populate_pattern)(t) for t in tasks)
     src_sentences, dest_sentences = reorder_tasks(tasks, num_patterns=len(sentence_pairs), src=src)
     return validate_population(src_sentences, dest_sentences)
