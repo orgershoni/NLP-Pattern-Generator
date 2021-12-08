@@ -3,6 +3,9 @@ scores.csv
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
 *.py[cod]
+.vscode/
+venv_name/
+slurm*.out
 
 # C extensions
 *.so

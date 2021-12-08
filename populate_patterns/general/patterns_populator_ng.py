@@ -1,11 +1,12 @@
-from typing import Dict, Tuple, List
 from utils import Gender, Tense, Language, capitalize_first_letter
-from annotated_word import AnnotatedWord, WordType
-import nltk
-import replacements_providers
+from .annotated_word import AnnotatedWord, WordType
+from .replacements_providers import get_replacements
+from .replacments_db import *
+
 import re
 import itertools
-from replacments_db import *
+from typing import Dict, List
+import nltk
 
 
 class Actor:
@@ -80,7 +81,7 @@ def parse_word_pattern(word_position: int, word_pattern: str, sentence : str, la
 
 
     if lang == Language.ARABIC and actual_word not in no_tense_words_arabic.keys():
-        from arabic_verbs_provider import ArabicTransformer
+        from populate_patterns.arabic.arabic_verbs_provider import ArabicTransformer
         meaning = ArabicTransformer().disambiguation(actual_word, sentence)
     else:
         meaning = None
@@ -98,7 +99,7 @@ def tokenize(pattern: str) -> List[str]:
 def get_replacement(word: AnnotatedWord, actor: Actor, meaning : str, action_meta: ActionMetadata, lang: Language) -> str:
 
     try:
-        gender_replacements = replacements_providers.get_replacements(word, actor.gender, action_meta.tense, meaning, lang)
+        gender_replacements = get_replacements(word, actor.gender, action_meta.tense, meaning, lang)
     except KeyError:
         print(f"Failed for word={word}, gender={actor.gender}, tense={action_meta.tense}, lang={lang}")
         exit(1)
@@ -111,7 +112,7 @@ def get_replacement(word: AnnotatedWord, actor: Actor, meaning : str, action_met
     return gender_replacements[actor.index] if len(gender_replacements) > 1 else gender_replacements[0]
 
 
-def _pop_sentence(populated_pattern: PopulatedPattern, words: [AnnotatedWord], lang: Language):
+def _pop_sentence(populated_pattern: PopulatedPattern, words: List[AnnotatedWord], lang: Language):
     word: AnnotatedWord
     populated_sentence = []
     for word in words:

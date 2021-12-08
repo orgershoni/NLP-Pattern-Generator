@@ -50,3 +50,13 @@ def is_gender_plural(gender : Gender):
     return gender == Gender.WE_M or\
            gender == Gender.WE_F or\
            gender == Gender.THEY
+
+def encode_arabic(arabic_txt : str):
+    # install: pip install --upgrade arabic-reshaper
+    import arabic_reshaper
+
+    # install: pip install python-bidi
+    from bidi.algorithm import get_display
+
+    reshaped_text = arabic_reshaper.reshape(arabic_txt)    # correct its shape
+    return get_display(reshaped_text)           # correct its direction

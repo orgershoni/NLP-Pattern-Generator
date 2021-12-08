@@ -11,7 +11,7 @@ _language_code_639 = {
     Language.ARABIC: "ar",
 }
 
-CRED_FILE_PATH = r"/home/orgersh/Desktop/service-account-file.json"
+CRED_FILE_PATH = r"/cs/snapless/oabend/or.gershoni/Or/google_auth.json"
 
 
 class Translator:

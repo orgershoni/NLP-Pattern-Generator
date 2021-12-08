@@ -1,5 +1,5 @@
 from typing import List, Tuple, Dict
-from annotated_word import AnnotatedWord, WordType
+from populate_patterns.general.annotated_word import AnnotatedWord, WordType
 import itertools
 import re
 import utils

@@ -1,10 +1,10 @@
-from hebrew_verbs_provider import create_verbs_table
-from arabic_verbs_provider import ArabicTransformer
+from ..hebrew.hebrew_verbs_provider import create_verbs_table
+from ..arabic.arabic_verbs_provider import ArabicTransformer
 from typing import List
 from utils import Language, Gender, Tense
-from annotated_word import WordType, AnnotatedWord
+from .annotated_word import WordType, AnnotatedWord
 import nodebox_linguistics_extended as nle
-from replacments_db import *
+from .replacments_db import *
 from utils import *
 
 class TenseLessRepsProvider:
