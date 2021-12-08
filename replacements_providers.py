@@ -35,7 +35,7 @@ class TenseLessRepsProvider:
 class TenseFullRepsProvider:
 
     @classmethod
-    def get_replacements(cls, word: str, gender: Gender, tense: Tense, lang: Language, verbs={}):
+    def get_replacements(cls, word: str, gender: Gender, tense: Tense, meaning : str, lang: Language, verbs={}):
         if not verbs:
             if lang == Language.HEBREW:
                 verbs_table = create_verbs_table("data/InflectedVerbsExtended.csv")
@@ -51,7 +51,7 @@ class TenseFullRepsProvider:
             if word in tense_full_arabic:
                 return tense_full_arabic[word][tense.value][gender.value]
             return ArabicTransformer().reinflect(canonical_form=word,
-                                                 gender=gender, tense=tense)
+                                                 gender=gender, tense=tense, meaning=meaning)
 
         person = str(gender_to_person[gender])
         negate = word.endswith("n't")
@@ -93,7 +93,7 @@ class TenseFullRepsProvider:
             return False
 
 
-def get_replacements(word: AnnotatedWord, gender: Gender, tense: Tense,
+def get_replacements(word: AnnotatedWord, gender: Gender, tense: Tense, meaning :str,
                      lang: Language) -> List[str]:
     if word.type == WordType.REGULAR:
         return [word.pattern]
@@ -101,5 +101,5 @@ def get_replacements(word: AnnotatedWord, gender: Gender, tense: Tense,
     if TenseLessRepsProvider.has_replacements(word, lang):
         return TenseLessRepsProvider.get_replacements(word, gender, tense, lang)
     else:
-        return TenseFullRepsProvider.get_replacements(word, gender, tense, lang)
+        return TenseFullRepsProvider.get_replacements(word, gender, tense, meaning, lang)
 

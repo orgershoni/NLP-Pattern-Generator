@@ -54,7 +54,8 @@ class ArabicTransformer:
 
     def reinflect(self, canonical_form: str, gender: Gender = Gender.HE,
                   is_active: bool = True, tense: Tense = None,
-                  dediac: bool = True, force_single_output = True):
+                  dediac: bool = True, force_single_output = True, meaning=None):
+        from camel_tools.utils.dediac import dediac_ar
 
         is_possessive = self.is_possessive(canonical_form)
         if self.get_pos(canonical_form) == 'noun' or not tense:
@@ -65,9 +66,18 @@ class ArabicTransformer:
         else:
             feats = self.get_feats_for_verb(gender, tense, is_active)
 
-        results = self._reinflect(canonical_form, feats, dediac)
+        # results = self._reinflect(canonical_form, feats, dediac)
+        results = self.reinflector.reinflect(canonical_form, feats)
+
+        if meaning:
+          for result in results:
+            if result['stemgloss'] == meaning:
+              return [dediac_ar(result['diac'])]
+        #   print(f"No result with meaning {meaning} was found")
+        #   print(*results,sep = '\n')
+
         if force_single_output and results:
-            return [results.pop()]
+            return [dediac_ar(results.pop()['diac'])]
 
         return list(results)
 
@@ -94,7 +104,7 @@ class ArabicTransformer:
 
         return results
 
-    def analyze(self, canonical_form: str):
+    def analyze(self, canonical_form: str, single_output=True):
 
         # feats = ArabicTransformer.gender_to_features(gender)
         # if tense is not Tense.PAST:
@@ -102,7 +112,8 @@ class ArabicTransformer:
         #     feats['asp'] = 'i'
         #
         # analyses = self.analyzer.analyze(canonical_form)
-        return self.analyzer.analyze(canonical_form)[-1]
+        analyses = self.analyzer.analyze(canonical_form)
+        return analyses.pop() if single_output else analyses
 
     @staticmethod
     def _gender_to_features(gender: Gender):
@@ -195,6 +206,34 @@ class ArabicTransformer:
         elif tense == Tense.PRESENT:
             return present
         return {}
+    
+    def disambiguation(self, base_form : str, context : str = ""):
+
+      def get_user_input(options, base_form : str):
+
+        msg = ''.join(options)
+        context_str = f"in the pattern {encode_arabic(context)}" if context else ""
+        print(f"The word you entered as token {context_str} is ambigous.")
+        print(f"Please choose the meaning of {encode_arabic(base_form)} you aimed for entering an index")
+
+        idx = int(input(msg))
+        while not 0 <= idx < len(options):
+          print("idx out of bounds, try again.")
+          idx = int(input(msg))
+        print(f"You chose the meaning {options[idx]}")
+        return idx
+
+      analyses = list(self.analyze(base_form, single_output=False))
+      meanings = sorted(list(set([props['stemgloss'] for props in analyses])))
+      if len(meanings) > 1:
+        options = [f"{idx} : {meaning}\n" for idx,meaning in enumerate(meanings)]
+        user_input_idx = get_user_input(options, base_form)
+        
+        meaning = meanings[user_input_idx]
+        for analysis in analyses:
+          if analysis['stemgloss'] == meaning:
+            return analysis
+      return None
 
 
 def test_analyze():

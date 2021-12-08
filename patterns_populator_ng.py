@@ -5,6 +5,7 @@ import nltk
 import replacements_providers
 import re
 import itertools
+from replacments_db import *
 
 
 class Actor:
@@ -44,7 +45,7 @@ class PopulatedPattern:
         return hash((frozenset(self.actors.items()), frozenset(self.actions.items())))
 
 
-def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
+def parse_word_pattern(word_position: int, word_pattern: str, sentence : str, lang : Language) -> AnnotatedWord:
     groups: List[int] = list(re.findall("#_([0-9]+)", word_pattern))
     assert len(groups) <= 1, f"Bad annotation for word: {word_pattern}"
     if not groups:
@@ -77,9 +78,15 @@ def parse_word_pattern(word_position: int, word_pattern: str) -> AnnotatedWord:
     if "עתיד" in attrs or "future" in attrs:
         tense = Tense.FUTURE
 
+
+    if lang == Language.ARABIC and actual_word not in no_tense_words_arabic.keys():
+        from arabic_verbs_provider import ArabicTransformer
+        meaning = ArabicTransformer().disambiguation(actual_word, sentence)
+    else:
+        meaning = None
     return AnnotatedWord(word_pattern, actual_word=actual_word, word_position=word_position,
                          speaker_group=int(speaker_group), prefix=prefix, word_type=pattern_type,
-                         gender=gender, tense=tense, action_id=action_id)
+                         gender=gender, tense=tense, action_id=action_id, meaning=meaning)
 
 
 def tokenize(pattern: str) -> List[str]:
@@ -88,10 +95,10 @@ def tokenize(pattern: str) -> List[str]:
     return nltk.RegexpTokenizer(rf"[\w\#\u0590-\u05CF\+']+|[^\w\s]+").tokenize(pattern)
 
 
-def get_replacement(word: AnnotatedWord, actor: Actor, action_meta: ActionMetadata, lang: Language) -> str:
+def get_replacement(word: AnnotatedWord, actor: Actor, meaning : str, action_meta: ActionMetadata, lang: Language) -> str:
 
     try:
-        gender_replacements = replacements_providers.get_replacements(word, actor.gender, action_meta.tense, lang)
+        gender_replacements = replacements_providers.get_replacements(word, actor.gender, action_meta.tense, meaning, lang)
     except KeyError:
         print(f"Failed for word={word}, gender={actor.gender}, tense={action_meta.tense}, lang={lang}")
         exit(1)
@@ -100,7 +107,7 @@ def get_replacement(word: AnnotatedWord, actor: Actor, action_meta: ActionMetada
         return None
     if len(gender_replacements) > 1 and actor.index > len(gender_replacements) - 1:
         return None
-    print(f"len(gender_replacements): {len(gender_replacements)}, word: {word}")
+    # print(f"len(gender_replacements): {len(gender_replacements)}, word: {word}")
     return gender_replacements[actor.index] if len(gender_replacements) > 1 else gender_replacements[0]
 
 
@@ -111,7 +118,7 @@ def _pop_sentence(populated_pattern: PopulatedPattern, words: [AnnotatedWord], l
         if word.type != WordType.REGULAR:
             actor = populated_pattern.actors[word.speaker_group]
             action_meta = populated_pattern.actions[word.action_id]
-            word.new_word = get_replacement(word, actor, action_meta, lang)
+            word.new_word = get_replacement(word, actor, word.meaning, action_meta, lang)
             if word.new_word is None:
                 return
         else:
@@ -136,13 +143,13 @@ def get_all_actions(verb_group):
     a2 = ActionMetadata(Tense.PRESENT, verb_group)
     return [a1, a2]
 
-
-def populate_pattern(sent: str, lang: Language,
-                     static_replacements_dict_or_none: Dict[str, str] = None,
-                     tenses_white_list: List[Tense] = None) -> Dict[PopulatedPattern, str]:
+def _preprocess_population(sent: str, lang : Language) -> List[AnnotatedWord]:
     pattern_words: List[str] = tokenize(sent)
-    parsed_words: List[AnnotatedWord] = [parse_word_pattern(pos, pattern) for pos, pattern in enumerate(
+    return [parse_word_pattern(pos, pattern, sent, lang) for pos, pattern in enumerate(
         pattern_words)]
+
+def _populate_pattern(parsed_words: List[AnnotatedWord], lang : Language) -> Dict[PopulatedPattern, str]:
+    
     speaker_groups: List[int] = list(sorted({word.speaker_group for word in parsed_words}))
     actions: List[int] = list(sorted({word.action_id for word in parsed_words if word.action_id is not None}))
     actions = actions if actions else [1]
@@ -160,5 +167,5 @@ def populate_pattern(sent: str, lang: Language,
 
 
 if __name__ == "__main__":
-    out1 = populate_pattern("#_1_someone #_1_missed #_2_someone+obj", Language.ENGLISH)
-    out2 = populate_pattern("#_2_מישהו #_2_חסר #_1_למישהו", Language.HEBREW)
+    out1 = _populate_pattern("#_1_someone #_1_missed #_2_someone+obj", Language.ENGLISH)
+    out2 = _populate_pattern("#_2_מישהו #_2_חסר #_1_למישהו", Language.HEBREW)
