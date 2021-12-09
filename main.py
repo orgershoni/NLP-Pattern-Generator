@@ -1,4 +1,4 @@
-from utils import compute_bleu
+from utils import GeneratedSentence, compute_bleu
 from typing import List, Tuple
 import pandas as pd
 import argparse
@@ -7,6 +7,7 @@ from utils import Language
 from translators.translate import translate
 from populate_patterns.main import populate
 from estimation.bleu import bleu
+from estimation.consistency import patterns_levenshtein
 from cache_manager.manager import g_cache_manager
 
 
@@ -45,6 +46,10 @@ def parse_args(parser):
 
     return patterns, src, dest, args.output_path, args.remove_disambg_cache
 
+def get_sentences(generated_sentences : List[GeneratedSentence]):
+
+    return [gen_sentence.sentence for gen_sentence in generated_sentences]
+
 def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, output_path: str, remove_disambiguity_cache=False):
 
     print(f"Generating setences out of {len(sentence_pairs)} patterns")
@@ -53,12 +58,16 @@ def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, o
     print(f"Translating src sentences. Num lines: {len(src_sentences)}")
     translated_sentences = translate(src_sentences, src, dest)
     
-    print("Computing bleu")
-    bleu_scores = bleu(translated_sentences, dest_reference)
+    # TODO before estimation we want to lower case all english sentences
 
+    print("Computing bleu")
+    bleu_scores = bleu(translated_sentences, get_sentences(dest_reference))
+
+    # TODO : we don't care about reference here, we measure consistency between sentences of the same pattern
+    patterns_levenshtein(translated_sentences, dest_reference)
     # Save to csv
     pd.DataFrame.from_dict({"Hebrew src": src_orig_sentences,
-                            "English Reference": dest_reference,
+                            "English Reference": get_sentences(dest_reference),
                             "English Translation": translated_sentences,
                             "Bleu Score": bleu_scores,
                             }) \

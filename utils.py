@@ -34,6 +34,12 @@ class Tense(Enum):
     PRESENT = "PRESENT"
     FUTURE = "FUTURE"
 
+
+class GeneratedSentence:
+    def __init__(self, sentence : str, origin_pattern : str) -> None:
+        self.sentence = sentence
+        self.origin_pattern = origin_pattern
+
 gender_to_person = {
     Gender.HE: 3,
     Gender.SHE: 3,

@@ -10,3 +10,4 @@ google-cloud-translate>=2.0.1
 camel_tools
 arabic-reshaper
 python-bidi
+distance

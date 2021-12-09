@@ -1,7 +1,7 @@
 from .general.annotated_word import AnnotatedWord
 from .general.patterns_populator_ng import _populate_pattern, _preprocess_population
 from typing import List, Tuple, Dict
-from utils import Language
+from utils import Language, GeneratedSentence
 from joblib import Parallel, delayed
 from cache_manager.manager import CacheOptions, g_cache_manager
 
@@ -48,7 +48,7 @@ def reorder_tasks(tasks : List[PopulateTask], num_patterns : int, src : Language
             dest_senteces[task.idx] = task.generated_sentences
     return src_sentences, dest_senteces
 
-def validate_population(src_sentences : List[Dict], dest_sentences : List[Dict]):
+def validate_population(src_sentences : List[Dict], dest_sentences : List[Dict], sentences_pairs):
 
     src_text_to_translate = []
     dest_reference = []
@@ -58,11 +58,16 @@ def validate_population(src_sentences : List[Dict], dest_sentences : List[Dict])
         assert len(src_sentences) == len(dest_sentences), f"pattern: {i+1}\n {src_sentences}\n{dest_sentences}\n" \
                                                                 f"{src_sentences}\n{dest_sentences}"
         # TODO explain why there are duplicates.
+        
         unique_pairs = set()
         for meta, sentence in src_sentences.items():
             unique_pairs.add((sentence, dest_sentences[meta]))
+
+        # src_pattern = sentences_pairs[i][0]
+        dest_pattern = sentences_pairs[i][1]
         src_sentences = [pair[0] for pair in unique_pairs]
-        dest_sentences = [pair[1] for pair in unique_pairs]
+        dest_sentences = [GeneratedSentence(pair[1], dest_pattern) for pair in unique_pairs]
+
         src_text_to_translate.extend(src_sentences)
         dest_reference.extend(dest_sentences)
         src_orig_sentences.extend(src_sentences)
@@ -75,6 +80,6 @@ def populate(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Languag
     tasks =  resolve_disambiguity(tasks, remove_disambguity_cache)
     tasks = Parallel(n_jobs=-1, verbose=50)(delayed(populate_pattern)(t) for t in tasks)
     src_sentences, dest_sentences = reorder_tasks(tasks, num_patterns=len(sentence_pairs), src=src)
-    return validate_population(src_sentences, dest_sentences)
+    return validate_population(src_sentences, dest_sentences, sentence_pairs)
 
     
