@@ -7,10 +7,12 @@ from utils import Language
 from translators.translate import translate
 from populate_patterns.main import populate
 from estimation.bleu import bleu
+from cache_manager.manager import g_cache_manager
 
 
 
 def parse_args(parser):
+    import os
     parser.add_argument("patterns_file", type=str, help="file of format TODO of patterns.", default="")
     parser.add_argument("src_language", type=str, choices=[e.name for e in Language], default="")
     parser.add_argument("dest_language", type=str, choices=[e.name for e in Language], default="")
@@ -18,12 +20,23 @@ def parse_args(parser):
     parser.add_argument("--pattern_indices", action='append', type=int, help="index of pattern in pattern file, "
                                                                              "0-based index.")
     parser.add_argument("-rcd", "--remove-disambg-cache", help="remove disambiguity cache", action='store_true', default=False)
+    parser.add_argument("-gta", "--google-translate-auth", help="Path to JSON file contains Google Translate credentials", default="")
+
 
     args = parser.parse_args(sys.argv[1:])
 
     src = Language[args.src_language]
     dest = Language[args.dest_language]
     
+    if args.google_translate_auth:
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = args.google_translate_auth
+        g_cache_manager.cache_google_auth(args.google_translate_auth)
+    else:
+        try:
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = g_cache_manager.load_google_auth()
+        except ValueError:
+            pass
+        
     df = pd.read_csv(args.patterns_file, encoding="utf-8", header=None)
     patterns = list(df.itertuples(index=False, name=None))
     if args.pattern_indices:

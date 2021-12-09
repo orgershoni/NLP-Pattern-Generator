@@ -3,13 +3,16 @@ from pathlib import Path
 from typing import Dict
 from enum import Enum
 
+
 class CacheOptions(Enum):
     DISAMBIGUITY = 1
+    GOOGLE_COULD_AUTH = 2
 
 def path_to_cache(cache_option : CacheOptions):
 
     lower_case_name = cache_option.name.lower()
-    return Path(f'cache/{lower_case_name}.json').absolute()
+    return Path(__file__).parent.parent.absolute() / 'cache' / f"{lower_case_name}.json"
+    
 
 class CacheManager:
 
@@ -60,7 +63,20 @@ class CacheManager:
                 return self.caches[CacheOptions.DISAMBIGUITY][pattern]
 
         raise ValueError(f"Pattern {pattern} is not cached")
+    
+    def cache_google_auth(self, google_auth_path : str):
+        self.start_caching(CacheOptions.GOOGLE_COULD_AUTH)
+        self.caches_in_progress[CacheOptions.GOOGLE_COULD_AUTH][CacheOptions.GOOGLE_COULD_AUTH.name] = google_auth_path
+        self.end_caching(CacheOptions.GOOGLE_COULD_AUTH)
 
+    def load_google_auth(self):
+
+        if CacheOptions.GOOGLE_COULD_AUTH in self.caches:
+            return self.caches[CacheOptions.GOOGLE_COULD_AUTH][CacheOptions.GOOGLE_COULD_AUTH.name]
+
+        raise ValueError(f"Google Cloud Auth is not cached")
+    
+    
 
 # singelton
 g_cache_manager = CacheManager()
