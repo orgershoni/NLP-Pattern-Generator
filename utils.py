@@ -1,5 +1,6 @@
 import nltk
 from enum import Enum
+from typing import List, Any, Dict
 
 
 def capitalize_first_letter(st: str):
@@ -70,3 +71,11 @@ def encode_arabic(arabic_txt : str):
 def chunks(l, n):
     n = max(1, n)
     return (l[i:i+n] for i in range(0, len(l), n))
+
+def lower_all(srcs : List[str]):
+
+    return [src.lower() for src in srcs]
+
+def all_pairs(src : List[Any]):
+    from itertools import combinations
+    return list(combinations(src, 2))

@@ -1,4 +1,4 @@
-from utils import GeneratedSentence, compute_bleu
+from utils import GeneratedSentence, lower_all
 from typing import List, Tuple
 import pandas as pd
 import argparse
@@ -8,7 +8,7 @@ from translators.translate import translate
 from populate_patterns.main import populate
 from estimation.bleu import bleu
 from estimation.consistency import patterns_levenshtein
-from cache_manager.manager import g_cache_manager
+from cache_manager.manager import CacheOptions, g_cache_manager
 
 
 
@@ -50,39 +50,53 @@ def get_sentences(generated_sentences : List[GeneratedSentence]):
 
     return [gen_sentence.sentence for gen_sentence in generated_sentences]
 
+def load_script_cache() -> CacheOptions:
+
+    print("Loading cache...")
+    try:
+        src, dest = g_cache_manager.load_generated_sentences()
+    except ValueError as e:
+        src = None
+    
+    if src : 
+        try:
+            translated = g_cache_manager.load_translated_sentences()
+            print("Loaded cached generated sentences and translated sentences")
+            return src, dest, src, translated
+        except ValueError as e:
+            print("Loaded cached generated sentences")
+            print(f"Error was : {str(e)}")
+            return src, dest, src, None
+    else:
+        print("No cache found")
+        return None, None, None, None
+
 def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, output_path: str, remove_disambiguity_cache=False):
 
-    print(f"Generating setences out of {len(sentence_pairs)} patterns")
-    src_sentences, dest_reference, src_orig_sentences = populate(sentence_pairs, src, dest, remove_disambiguity_cache)
+    src_sentences, dest_reference, src_orig_sentences, translated_sentences = load_script_cache()
 
-    print(f"Translating src sentences. Num lines: {len(src_sentences)}")
-    translated_sentences = translate(src_sentences, src, dest)
+    if not src_sentences:
+        print(f"Generating setences out of {len(sentence_pairs)} patterns")
+        src_sentences, dest_reference, src_orig_sentences = populate(sentence_pairs, src, dest, remove_disambiguity_cache)
+        g_cache_manager.cache_generated_sentences(src_sentences, dest_reference)
+
+    if not translated_sentences:
+        print(f"Translating src sentences. Num lines: {len(src_sentences)}")
+        translated_sentences = lower_all(translate(src_sentences, src, dest))
+        g_cache_manager.cache_translated_sentences(translated_sentences)
     
-    # TODO before estimation we want to lower case all english sentences
-
     print("Computing bleu")
     bleu_scores = bleu(translated_sentences, get_sentences(dest_reference))
 
     # TODO : we don't care about reference here, we measure consistency between sentences of the same pattern
     patterns_levenshtein(translated_sentences, dest_reference)
     # Save to csv
-    pd.DataFrame.from_dict({"Hebrew src": src_orig_sentences,
-                            "English Reference": get_sentences(dest_reference),
-                            "English Translation": translated_sentences,
+    pd.DataFrame.from_dict({f"{src.name} src": src_orig_sentences,
+                            f"{dest.name} Reference": get_sentences(dest_reference),
+                            f"{dest.name} Translation": translated_sentences,
                             "Bleu Score": bleu_scores,
                             }) \
                             .to_csv(output_path, encoding="utf-8")
-
-
-def parse_languages(src_language:str, dest_language:str) -> Tuple[Language, Language]:
-
-    supported_langs = [e.name for e in Language]
-    if src_language not in supported_langs:
-        raise KeyError(f"{src_language} is not supported")
-    if dest_language not in supported_langs:
-        raise KeyError(f"{dest_language} is not supported")
-
-    return Language[src_language], Language[dest_language]
 
 
 if __name__ == "__main__":

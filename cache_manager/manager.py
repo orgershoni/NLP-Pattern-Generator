@@ -1,18 +1,21 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List, Tuple, Any
 from enum import Enum
+
+from utils import GeneratedSentence
 
 
 class CacheOptions(Enum):
     DISAMBIGUITY = 1
     GOOGLE_COULD_AUTH = 2
+    GEN_SENTENCES = 3
+    TRANSLATED_SENTENCES = 4
 
 def path_to_cache(cache_option : CacheOptions):
 
     lower_case_name = cache_option.name.lower()
     return Path(__file__).parent.parent.absolute() / 'cache' / f"{lower_case_name}.json"
-    
 
 class CacheManager:
 
@@ -46,6 +49,7 @@ class CacheManager:
             path.parent.mkdir(exist_ok=True, parents=True)
             with path.open('w') as f:
                 json.dump(self.caches_in_progress[cache_name], f)
+
             
             self.caches[cache_name] = self.caches_in_progress[cache_name]
             self.caches_in_progress.pop(cache_name)
@@ -74,9 +78,40 @@ class CacheManager:
         if CacheOptions.GOOGLE_COULD_AUTH in self.caches:
             return self.caches[CacheOptions.GOOGLE_COULD_AUTH][CacheOptions.GOOGLE_COULD_AUTH.name]
 
-        raise ValueError(f"Google Cloud Auth is not cached")
+        raise ValueError(f"{CacheOptions.GOOGLE_COULD_AUTH.name} is not cached")
     
-    
+    def cache_generated_sentences(self, src_sentences : List[str], dest_sentences : List[GeneratedSentence]):
+        self.start_caching(CacheOptions.GEN_SENTENCES)
+        self.caches_in_progress[CacheOptions.GEN_SENTENCES]['src'] = json.dumps(src_sentences)
+        self.caches_in_progress[CacheOptions.GEN_SENTENCES]['dest'] = json.dumps([json.dumps(dest_sen.__dict__) for dest_sen in dest_sentences])
+        self.end_caching(CacheOptions.GEN_SENTENCES)
+
+    def load_generated_sentences(self) -> Tuple[List[str], List[GeneratedSentence]]:
+
+        if CacheOptions.GEN_SENTENCES in self.caches:
+            src = json.loads(self.caches[CacheOptions.GEN_SENTENCES]['src'])
+            # GeneratedSentence obj is being serialized to dict when saved to JSON
+
+            dest = [
+                    GeneratedSentence(**json.loads(str_obj))
+                    for str_obj in json.loads(self.caches[CacheOptions.GEN_SENTENCES]['dest']) 
+                    ]
+            return src, dest 
+
+        raise ValueError(f"{CacheOptions.GEN_SENTENCES.name} is not cached")
+
+    def cache_translated_sentences(self, translted_sentences : List[str]):
+        self.start_caching(CacheOptions.TRANSLATED_SENTENCES)
+        self.caches_in_progress[CacheOptions.TRANSLATED_SENTENCES]['translated'] = json.dumps(translted_sentences)
+        self.end_caching(CacheOptions.TRANSLATED_SENTENCES)
+
+    def load_translated_sentences(self) -> List[str]:
+
+        if CacheOptions.TRANSLATED_SENTENCES in self.caches:
+            return json.loads(self.caches[CacheOptions.TRANSLATED_SENTENCES]['translated'])
+        raise ValueError(f"{CacheOptions.TRANSLATED_SENTENCES.name} is not cached")
+
+
 
 # singelton
 g_cache_manager = CacheManager()

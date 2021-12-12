@@ -66,7 +66,7 @@ def validate_population(src_sentences : List[Dict], dest_sentences : List[Dict],
         # src_pattern = sentences_pairs[i][0]
         dest_pattern = sentences_pairs[i][1]
         src_sentences = [pair[0] for pair in unique_pairs]
-        dest_sentences = [GeneratedSentence(pair[1], dest_pattern) for pair in unique_pairs]
+        dest_sentences = [GeneratedSentence(pair[1].lower(), dest_pattern) for pair in unique_pairs]
 
         src_text_to_translate.extend(src_sentences)
         dest_reference.extend(dest_sentences)
