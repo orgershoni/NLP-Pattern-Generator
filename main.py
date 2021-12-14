@@ -21,22 +21,11 @@ def parse_args(parser):
     parser.add_argument("--pattern_indices", action='append', type=int, help="index of pattern in pattern file, "
                                                                              "0-based index.")
     parser.add_argument("-rcd", "--remove-disambg-cache", help="remove disambiguity cache", action='store_true', default=False)
-    parser.add_argument("-gta", "--google-translate-auth", help="Path to JSON file contains Google Translate credentials", default="")
-
 
     args = parser.parse_args(sys.argv[1:])
 
     src = Language[args.src_language]
     dest = Language[args.dest_language]
-    
-    if args.google_translate_auth:
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = args.google_translate_auth
-        g_cache_manager.cache_google_auth(args.google_translate_auth)
-    else:
-        try:
-            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = g_cache_manager.load_google_auth()
-        except ValueError:
-            pass
         
     df = pd.read_csv(args.patterns_file, encoding="utf-8", header=None)
     patterns = list(df.itertuples(index=False, name=None))
