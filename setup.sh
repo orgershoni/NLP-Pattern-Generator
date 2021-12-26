@@ -4,5 +4,5 @@
 
 pip3 install virtualenv
 python3 -m venv venv_name
-source venv_name/bin/activate.csh  #key step
+source venv_name/bin/activate.csh
 pip3 install -r requirements.txt --no-cache-dir

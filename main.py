@@ -1,4 +1,4 @@
-from utils import GeneratedSentence, lower_all
+from utils import GeneratedSentence, lower_all, cluster_by_pattern
 from typing import List, Tuple
 import pandas as pd
 import argparse
@@ -6,7 +6,7 @@ import sys
 from utils import Language
 from translators.translate import translate
 from populate_patterns.main import populate
-from estimation.bleu import bleu
+from estimation.bleu import bleu, patterns_bleu
 from estimation.consistency import patterns_levenshtein
 from cache_manager.manager import CacheOptions, g_cache_manager
 
@@ -60,6 +60,29 @@ def load_script_cache() -> CacheOptions:
         print("No cache found")
         return None, None, None, None
 
+def estimate(actual_translations : List[str], expected_translations : List[GeneratedSentence]):
+
+    patterns_info = cluster_by_pattern(actual_translations, expected_translations)
+    patterns_info = patterns_levenshtein(patterns_info)
+    patterns_info = patterns_bleu(patterns_info)
+
+    scores_dict = {
+        "Dest Pattern" : [],
+        "Source Pattern" : [],
+        "Levenstein distance" : [],
+        "Max Bleu" : [],
+        "Mean Bleu" : []
+    }
+    for pattern_info in patterns_info:
+        scores_dict["Levenstein distance"].append(pattern_info['levenstein_score'])
+        scores_dict["Max Bleu"].append(pattern_info['max_bleu'])
+        scores_dict["Mean Bleu"].append(pattern_info['mean_bleu'])
+        scores_dict["Dest Pattern"].append(pattern_info['dest_pattern'])
+        scores_dict["Source Pattern"].append(pattern_info['src_pattern'])
+
+
+    return scores_dict    
+
 def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, output_path: str, remove_disambiguity_cache=False):
 
     src_sentences, dest_reference, src_orig_sentences, translated_sentences = load_script_cache()
@@ -74,18 +97,11 @@ def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, o
         translated_sentences = lower_all(translate(src_sentences, src, dest))
         g_cache_manager.cache_translated_sentences(translated_sentences)
     
-    print("Computing bleu")
-    bleu_scores = bleu(translated_sentences, get_sentences(dest_reference))
+    print("Estimating")
+    scores = estimate(translated_sentences, dest_reference)
 
-    # TODO : we don't care about reference here, we measure consistency between sentences of the same pattern
-    patterns_levenshtein(translated_sentences, dest_reference)
     # Save to csv
-    pd.DataFrame.from_dict({f"{src.name} src": src_orig_sentences,
-                            f"{dest.name} Reference": get_sentences(dest_reference),
-                            f"{dest.name} Translation": translated_sentences,
-                            "Bleu Score": bleu_scores,
-                            }) \
-                            .to_csv(output_path, encoding="utf-8")
+    pd.DataFrame.from_dict(scores).to_csv(output_path, encoding="utf-8")
 
 
 if __name__ == "__main__":
