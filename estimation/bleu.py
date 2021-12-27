@@ -14,6 +14,7 @@ def patterns_bleu(per_pattern_sentences):
     for pattern_info in per_pattern_sentences:
         bleu_scores = np.array(bleu(pattern_info['actual_sentences'], pattern_info['expected_sentences']))
         pattern_info['max_bleu'] = bleu_scores.max()
+        pattern_info['argmax_bleu'] = bleu_scores.argmax()
         pattern_info['mean_bleu'] = bleu_scores.mean()
 
     return per_pattern_sentences

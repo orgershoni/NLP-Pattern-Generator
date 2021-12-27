@@ -17,7 +17,7 @@ def parse_args(parser):
     parser.add_argument("patterns_file", type=str, help="file of format TODO of patterns.", default="")
     parser.add_argument("src_language", type=str, choices=[e.name for e in Language], default="")
     parser.add_argument("dest_language", type=str, choices=[e.name for e in Language], default="")
-    parser.add_argument("-o", "--output_path", help="output path", default="scores.csv")
+    parser.add_argument("-o", "--output_path", help="output path", default="outputs/scores.csv")
     parser.add_argument("--pattern_indices", action='append', type=int, help="index of pattern in pattern file, "
                                                                              "0-based index.")
     parser.add_argument("-rcd", "--remove-disambg-cache", help="remove disambiguity cache", action='store_true', default=False)
@@ -63,18 +63,22 @@ def load_script_cache() -> CacheOptions:
 def estimate(actual_translations : List[str], expected_translations : List[GeneratedSentence]):
 
     patterns_info = cluster_by_pattern(actual_translations, expected_translations)
-    patterns_info = patterns_levenshtein(patterns_info)
     patterns_info = patterns_bleu(patterns_info)
+    patterns_info = patterns_levenshtein(patterns_info)
 
     scores_dict = {
         "Dest Pattern" : [],
         "Source Pattern" : [],
-        "Levenstein distance" : [],
+        "Mean Levenstein" : [],
+        "Min Levenstein" : [],
+        "Max Levenstein" : [],
         "Max Bleu" : [],
         "Mean Bleu" : []
     }
     for pattern_info in patterns_info:
-        scores_dict["Levenstein distance"].append(pattern_info['levenstein_score'])
+        scores_dict["Mean Levenstein"].append(pattern_info['mean_leven'])
+        scores_dict["Max Levenstein"].append(pattern_info['max_leven'])
+        scores_dict["Min Levenstein"].append(pattern_info['min_leven'])
         scores_dict["Max Bleu"].append(pattern_info['max_bleu'])
         scores_dict["Mean Bleu"].append(pattern_info['mean_bleu'])
         scores_dict["Dest Pattern"].append(pattern_info['dest_pattern'])
@@ -84,7 +88,7 @@ def estimate(actual_translations : List[str], expected_translations : List[Gener
     return scores_dict    
 
 def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, output_path: str, remove_disambiguity_cache=False):
-
+    from pathlib import Path
     src_sentences, dest_reference, src_orig_sentences, translated_sentences = load_script_cache()
 
     if not src_sentences:
@@ -97,11 +101,18 @@ def main(sentence_pairs: List[Tuple[str, str]], src: Language, dest: Language, o
         translated_sentences = lower_all(translate(src_sentences, src, dest))
         g_cache_manager.cache_translated_sentences(translated_sentences)
     
+    Path(Path(__file__).parent / 'outputs').mkdir(exist_ok=True)
     print("Estimating")
     scores = estimate(translated_sentences, dest_reference)
 
     # Save to csv
     pd.DataFrame.from_dict(scores).to_csv(output_path, encoding="utf-8")
+
+    pd.DataFrame.from_dict({"Source" : src_orig_sentences,
+                            "Expected Translation" : get_sentences(dest_reference),
+                            "Actual Translation" : translated_sentences}) \
+                             .to_csv('outputs/translation_comp.csv', encoding="utf-8")
+
 
 
 if __name__ == "__main__":

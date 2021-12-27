@@ -1,6 +1,6 @@
 import nltk
 from enum import Enum
-from typing import List, Any
+from typing import List
 
 def capitalize_first_letter(st: str):
     if not st:
@@ -79,10 +79,6 @@ def chunks(l, n):
 def lower_all(srcs : List[str]):
 
     return [src.lower() for src in srcs]
-
-def all_pairs(src : List[Any]):
-    from itertools import combinations
-    return list(combinations(src, 2))
 
 
 def cluster_by_pattern(actual_translations : List[str], reference_translations : List[GeneratedSentence]):
